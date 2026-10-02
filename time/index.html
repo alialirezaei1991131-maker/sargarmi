@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>River of Time</title>
+<meta name="description" content="A horizontal timeline of major events in world and Iranian history, from the first farms to today.">
+<style>
+/* وزیرمتن، ساخته صابر راستی‌کردار، پروانه SIL Open Font */
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+
+/* یک دنیای بصری واحد (تیره، با رنگی که با دوران عوض می‌شود)، پس فقط یک پوسته دارد. */
+:root{
+  color-scheme:dark;
+  --ink:#f1ece4;
+  --ink-dim:#c2b8aa;
+  --ink-faint:#8d8375;
+  --panel:rgba(14,12,12,.62);
+  --line:rgba(241,236,228,.22);
+  --band:rgba(0,0,0,.28);
+  --gold:#f5c76b;
+  --p:#ff8f7a;  /* سیاست و جنگ */
+  --s:#7ecbff;  /* علم و فناوری */
+  --c:#f5c76b;  /* فرهنگ و دین */
+  --e:#8fe0a8;  /* اقتصاد و جامعه */
+  --font:'Vazirmatn',Tahoma,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#1d1714;color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.7;
+  overflow:hidden;-webkit-font-smoothing:antialiased;transition:background-color .5s}
+h1,h2,h3{margin:0;line-height:1.3;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr auto}
+
+/* ------------------------------------------------ سربرگ */
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:14px 20px 10px}
+.brand{display:grid;gap:2px}
+.brand h1{font-size:1.5rem;font-weight:700}
+.brand p{font-size:.84rem;color:var(--ink-dim)}
+.gauge{text-align:center;display:grid;gap:0;min-width:15rem}
+.g-year{font-size:2.1rem;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.g-year small{font-size:.85rem;font-weight:500;color:var(--ink-dim);margin-inline-start:6px}
+.g-sub{font-size:.84rem;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.g-era{font-size:.84rem;font-weight:600;color:var(--gold)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:transparent;border-radius:999px;
+  padding:3px 11px;font-size:.82rem;cursor:pointer;color:var(--ink-dim);transition:background .2s,color .2s}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--k)}
+.chip[aria-pressed="true"]{background:rgba(241,236,228,.1);color:var(--ink);border-color:rgba(241,236,228,.4)}
+a.chip{text-decoration:none;color:var(--ink)}
+.chip.iran[aria-pressed="true"]{background:rgba(245,199,107,.16);border-color:var(--gold);color:var(--gold)}
+
+/* ------------------------------------------------ مسیر زمان */
+.stage{position:relative;min-height:0}
+.center{position:absolute;top:0;bottom:0;left:50%;width:0;border-left:1px solid rgba(245,199,107,.55);z-index:4;pointer-events:none}
+.center::before{content:"";position:absolute;top:-1px;left:-6px;border:6px solid transparent;border-top-color:var(--gold)}
+.scroller{position:absolute;inset:0;overflow-x:auto;overflow-y:auto;direction:ltr;scrollbar-width:thin;
+  scrollbar-color:rgba(241,236,228,.25) transparent;overscroll-behavior-x:contain}
+#track{position:relative;height:100%}
+.band{position:absolute;right:0;left:0;height:30px;background:var(--band);border-block:1px solid var(--line)}
+.tick{position:absolute;height:30px;display:flex;align-items:center;padding-inline-start:5px;border-left:1px solid var(--line);
+  font-size:.72rem;color:var(--ink-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tick.major{color:var(--ink-dim);border-left-color:rgba(241,236,228,.45)}
+.scale{position:absolute;top:0;bottom:0;border-left:1px dashed rgba(245,199,107,.45);pointer-events:none}
+.scale span{position:absolute;bottom:10px;left:6px;white-space:nowrap;font-size:.72rem;color:var(--gold);
+  background:rgba(0,0,0,.35);border-radius:6px;padding:1px 8px}
+.era{position:absolute;top:6px;font-size:clamp(2.2rem,6vw,4.4rem);font-weight:700;color:rgba(241,236,228,.07);white-space:nowrap;pointer-events:none;line-height:1}
+.dot{position:absolute;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:var(--k);box-shadow:0 0 0 3px rgba(0,0,0,.35);z-index:2}
+
+.ev{position:absolute;width:var(--cw);background:var(--panel);border:1px solid rgba(241,236,228,.12);border-radius:12px;
+  padding:9px 12px 10px;display:grid;gap:2px;z-index:3;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.ev::after{content:"";position:absolute;left:14px;width:0;height:var(--stem);border-right:1px solid var(--k)}
+.ev.up::after{top:100%}
+.ev.down::after{bottom:100%}
+.ev .y{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;color:var(--k);font-variant-numeric:tabular-nums}
+.ev .y b{font-weight:600;color:var(--ink-faint);font-size:.72rem}
+.ev .ir{margin-inline-start:auto;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:0 7px;font-size:.68rem;font-weight:600}
+.ev h3{font-size:.98rem;font-weight:700}
+.ev p{font-size:.82rem;color:var(--ink-dim);line-height:1.65}
+
+/* ------------------------------------------------ پایین: نوار کل تاریخ و کنترل‌ها */
+.bottom{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:10px 20px calc(12px + env(safe-area-inset-bottom,0px))}
+.nav{border:1px solid var(--line);background:rgba(241,236,228,.06);border-radius:999px;padding:6px 14px;font-size:.86rem;cursor:pointer;white-space:nowrap}
+.nav:hover{background:rgba(241,236,228,.14)}
+.mini-wrap{display:grid;gap:4px}
+.mini{position:relative;height:22px;border-radius:6px;overflow:hidden;cursor:pointer;background:rgba(0,0,0,.3)}
+.mini .seg{position:absolute;top:0;bottom:0}
+.mini .mt{position:absolute;top:5px;bottom:5px;width:2px;margin-left:-1px;background:var(--k);opacity:.85}
+.mini .win{position:absolute;top:0;bottom:0;min-width:3px;border:2px solid var(--ink);border-radius:4px;background:rgba(241,236,228,.12);pointer-events:none}
+.mini-cap{font-size:.74rem;color:var(--ink-faint)}
+
+@media (max-width:760px){
+  body{font-size:14px}
+  .top{grid-template-columns:1fr auto;padding:10px 16px 6px;gap:6px 12px}
+  .brand h1{font-size:1.2rem}
+  .brand p{display:none}
+  .gauge{min-width:0;text-align:right}
+  .g-year{font-size:1.5rem}
+  .filters{grid-column:1 / -1;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .chip{flex:none}
+  .bottom{grid-template-columns:1fr 1fr;padding-inline:16px}
+  .mini-wrap{grid-column:1 / -1;order:-1}
+  .nav.next{justify-self:end}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>River of Time</h1>
+      <p>Twelve thousand years of world and Iranian history, from the first farms to today</p>
+    </div>
+    <div class="gauge" aria-live="off">
+      <div class="g-year" id="gYear">10,000<small>BCE</small></div>
+      <div class="g-sub" id="gSub"></div>
+      <div class="g-era" id="gEra"></div>
+    </div>
+    <div class="filters" role="group" aria-label="Show events">
+      <button class="chip" type="button" data-cat="p" aria-pressed="true" style="--k:var(--p)"><i></i>Politics &amp; war</button>
+      <button class="chip" type="button" data-cat="s" aria-pressed="true" style="--k:var(--s)"><i></i>Science &amp; technology</button>
+      <button class="chip" type="button" data-cat="c" aria-pressed="true" style="--k:var(--c)"><i></i>Culture &amp; religion</button>
+      <button class="chip" type="button" data-cat="e" aria-pressed="true" style="--k:var(--e)"><i></i>Economy &amp; society</button>
+      <button class="chip iran" type="button" id="iranOnly" aria-pressed="false">Iran only</button>
+      <a class="chip lang" href="../index.html" lang="fa">← صفحهٔ اصلی</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="scroller" id="scroller" tabindex="0" aria-label="Timeline; scroll or use the arrow keys to move through time">
+      <div id="track"></div>
+    </div>
+    <div class="center" aria-hidden="true"></div>
+  </main>
+
+  <footer class="bottom">
+    <button class="nav prev" type="button" id="prev">← Previous event</button>
+    <div class="mini-wrap">
+      <div class="mini" id="mini" role="slider" aria-label="All of history at an even scale" tabindex="0"></div>
+      <span class="mini-cap" id="miniCap">This bar shows all twelve thousand years at an even scale; the whole 20th and 21st centuries are just the thin strip at the right end.</span>
+    </div>
+    <button class="nav next" type="button" id="next">Next event →</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const NOW = Math.max(2026, new Date().getFullYear());
+const START = -10000;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const fa = (n, d = 0) => Number(n).toLocaleString('en-US', {maximumFractionDigits: d, minimumFractionDigits: d});
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+// سال‌های کمتر از ده هزار بدون جداکنندهٔ هزارگان نوشته می‌شوند
+const yr = n => Math.abs(n) >= 10000 ? fa(n) : Number(n).toLocaleString('en-US', {useGrouping: false});
+
+/* ================================================================ مقیاس */
+// زمانِ نزدیک‌تر پرحادثه‌تر است، پس مقیاس در پنج بازه بزرگ‌تر می‌شود (پیکسل به ازای هر سال).
+const SEGS = [
+  {from: START, to: -3000, px: .25},
+  {from: -3000, to: 0, px: 1},
+  {from: 0, to: 1500, px: 2},
+  {from: 1500, to: 1900, px: 10},
+  {from: 1900, to: NOW, px: 36}
+];
+SEGS.forEach((s, i) => s.x0 = i ? SEGS[i - 1].x0 + (SEGS[i - 1].to - SEGS[i - 1].from) * SEGS[i - 1].px : 0);
+const LAST = SEGS[SEGS.length - 1];
+const SPAN = LAST.x0 + (LAST.to - LAST.from) * LAST.px;
+function X(y) {
+  y = clamp(y, START, NOW);
+  for (const s of SEGS) if (y <= s.to) return s.x0 + (y - s.from) * s.px;
+  return SPAN;
+}
+function Y(x) {
+  x = clamp(x, 0, SPAN);
+  for (const s of SEGS) { const end = s.x0 + (s.to - s.from) * s.px; if (x <= end) return s.from + (x - s.x0) / s.px; }
+  return NOW;
+}
+
+/* ================================================================ دوران‌ها */
+const ERAS = [
+  {from: START, name: 'Prehistory', c: [44, 32, 24]},
+  {from: -3200, name: 'Antiquity', c: [56, 34, 26]},
+  {from: 476, name: 'Middle Ages', c: [24, 38, 40]},
+  {from: 1453, name: 'Early modern era', c: [30, 34, 56]},
+  {from: 1789, name: 'Age of industry and revolution', c: [36, 30, 52]},
+  {from: 1914, name: 'Contemporary era', c: [18, 24, 36]}
+];
+function eraAt(y) { let e = ERAS[0]; ERAS.forEach(r => { if (y >= r.from) e = r; }); return e; }
+function bgAt(y) {
+  for (let i = ERAS.length - 1; i >= 0; i--) if (y >= ERAS[i].from) {
+    const a = ERAS[i], b = ERAS[i + 1];
+    if (!b) return a.c;
+    // در یک‌پنجم پایانی هر دوران به رنگ دوران بعد می‌رسد
+    const len = b.from - a.from, t = clamp((y - (b.from - len * .2)) / (len * .2), 0, 1);
+    return a.c.map((v, k) => Math.round(v + (b.c[k] - v) * t));
+  }
+  return ERAS[0].c;
+}
+
+/* ================================================================ رویدادها */
+// y سال (منفی یعنی پیش از میلاد)، k دسته، ir رویداد ایرانی، ca «حدود»
+const EVENTS = [
+  {y: -10000, k: 'e', ca: 1, t: "The first farms", d: "People in the Fertile Crescent began growing wheat and barley and slowly settled down."},
+  {y: -9500, k: 'c', ca: 1, t: "Göbekli Tepe", d: "The oldest known stone temple, built before pottery or writing were invented."},
+  {y: -8000, k: 'e', ca: 1, ir: 1, t: "Goats tamed in the Zagros", d: "Ganj Dareh, near Kermanshah, holds some of the earliest evidence of goat herding."},
+  {y: -5500, k: 'c', ca: 1, ir: 1, t: "Tepe Sialk", d: "One of the oldest settlements on the Iranian plateau, near Kashan, known for its painted pottery."},
+  {y: -3500, k: 's', ca: 1, t: "The wheel", d: "The first wheels in Mesopotamia were used for pottery, then for carts."},
+  {y: -3200, k: 'c', ca: 1, t: "Cuneiform writing", d: "Sumerians kept storehouse accounts on clay tablets, and written history began."},
+  {y: -3200, k: 'e', ca: 1, ir: 1, t: "Shahr-e Sukhteh", d: "A large city in Sistan where the oldest known artificial eye was found."},
+  {y: -3100, k: 'p', ca: 1, t: "Egypt unified", d: "Upper and Lower Egypt came under a single pharaoh."},
+  {y: -2560, k: 'c', ca: 1, t: "Great Pyramid of Giza", d: "It stayed the tallest human-made structure for almost four thousand years."},
+  {y: -2334, k: 'p', ca: 1, t: "Akkadian Empire", d: "Sargon of Akkad founded history's first multi-ethnic empire in Mesopotamia."},
+  {y: -1754, k: 'p', ca: 1, t: "Code of Hammurabi", d: "One of the oldest written law codes, carved on a stone pillar in Babylon."},
+  {y: -1250, k: 'c', ca: 1, ir: 1, t: "Chogha Zanbil ziggurat", d: "An Elamite stepped temple in Khuzestan, among the first Iranian sites on the World Heritage list."},
+  {y: -776, k: 'c', t: "First Olympic Games", d: "Held at Olympia in Greece, with a single footrace the length of the stadium."},
+  {y: -550, k: 'p', ir: 1, t: "Cyrus and the Achaemenids", d: "Cyrus the Great took Media and founded the largest empire the world had yet seen."},
+  {y: -539, k: 'p', ir: 1, t: "Conquest of Babylon", d: "Cyrus took Babylon. The Cyrus Cylinder tells of returning exiles and restored temples."},
+  {y: -518, k: 'c', ca: 1, ir: 1, t: "Persepolis begins", d: "Darius the Great began building the palaces of Persepolis."},
+  {y: -508, k: 'p', t: "Athenian democracy", d: "The reforms of Cleisthenes put the citizens of Athens in charge."},
+  {y: -330, k: 'p', ir: 1, t: "Alexander ends the Achaemenids", d: "Alexander of Macedon conquered Persia and Persepolis was burned."},
+  {y: -221, k: 'p', t: "China unified", d: "Qin Shi Huang unified China and pushed the Great Wall forward."},
+  {y: -44, k: 'p', t: "Julius Caesar assassinated", d: "His death opened the way from the Roman Republic to the Empire."},
+  {y: -4, k: 'c', ca: 1, t: "Birth of Jesus", d: "The basis of the Western calendar, though his actual birth is usually placed a few years earlier."},
+  {y: 105, k: 's', t: "Paper", d: "Cai Lun in China perfected a way to make paper from plant fibers."},
+  {y: 224, k: 'p', ir: 1, t: "The Sasanian Empire", d: "Ardashir I overthrew the Parthians and founded the Sasanian Empire."},
+  {y: 476, k: 'p', t: "Fall of the Western Roman Empire", d: "The last western emperor was deposed; the usual end date of antiquity."},
+  {y: 622, k: 'c', t: "The Hijra", d: "The Prophet of Islam moved from Mecca to Medina, the start of the Islamic and Iranian Solar Hijri calendars."},
+  {y: 651, k: 'p', ir: 1, t: "End of the Sasanians", d: "With the death of Yazdegerd III, Iran became part of the Islamic caliphate."},
+  {y: 820, k: 's', ca: 1, ir: 1, t: "Al-Khwarizmi and algebra", d: "His book gave algebra its name, and his own name gave us the word “algorithm”."},
+  {y: 1010, k: 'c', ir: 1, t: "Ferdowsi's Shahnameh", d: "After about thirty years of work, Ferdowsi finished the Persian national epic."},
+  {y: 1025, k: 's', ca: 1, ir: 1, t: "Avicenna's Canon of Medicine", d: "A medical encyclopedia taught in European universities for centuries."},
+  {y: 1096, k: 'p', t: "The First Crusade", d: "The start of two centuries of war between Christian Europe and Muslim lands over Jerusalem."},
+  {y: 1206, k: 'p', t: "Genghis Khan", d: "The Mongol tribes united under him, beginning the largest land empire in history."},
+  {y: 1215, k: 'p', t: "Magna Carta", d: "English barons forced the king to accept that he too was bound by the law."},
+  {y: 1219, k: 'p', ir: 1, t: "Mongols invade Iran", d: "Genghis Khan's army reached Khwarazm and Khorasan, and great cities were destroyed."},
+  {y: 1258, k: 'c', ir: 1, t: "Saadi's Gulistan", d: "Saadi wrote the Gulistan in the same year the Mongols sacked Baghdad."},
+  {y: 1347, k: 'e', t: "The Black Death", d: "Plague reached Europe and within a few years killed perhaps a third of its people."},
+  {y: 1440, k: 's', ca: 1, t: "Gutenberg's press", d: "Printing with movable type made books cheap and knowledge widespread."},
+  {y: 1453, k: 'p', t: "Fall of Constantinople", d: "The Ottomans took the Byzantine capital; the usual end date of the Middle Ages."},
+  {y: 1492, k: 'p', t: "Columbus reaches the Americas", d: "The start of lasting contact between the two hemispheres and the colonization of the Americas."},
+  {y: 1501, k: 'p', ir: 1, t: "The Safavids", d: "Shah Ismail was crowned in Tabriz and made Shi'ism Iran's state religion."},
+  {y: 1517, k: 'c', t: "The Reformation", d: "Martin Luther published his 95 theses and Western Christianity split in two."},
+  {y: 1522, k: 'e', t: "First voyage around the world", d: "Survivors of Magellan's fleet returned to Spain after three years at sea."},
+  {y: 1543, k: 's', t: "Copernicus", d: "His book put the Sun, not the Earth, at the center."},
+  {y: 1598, k: 'c', ir: 1, t: "Isfahan becomes the capital", d: "Shah Abbas moved the capital to Isfahan, where Naqsh-e Jahan Square was built."},
+  {y: 1610, k: 's', t: "Galileo's telescope", d: "Galileo saw the moons of Jupiter and the mountains of the Moon."},
+  {y: 1687, k: 's', t: "Newton's Principia", d: "His laws of motion and gravity explained at once why apples fall and the Moon doesn't."},
+  {y: 1760, k: 'e', ca: 1, t: "The Industrial Revolution", d: "Steam engines and factories in Britain transformed work and daily life."},
+  {y: 1776, k: 'p', t: "American independence", d: "Thirteen British colonies declared their independence."},
+  {y: 1789, k: 'p', t: "The French Revolution", d: "The storming of the Bastille and the Declaration of the Rights of Man and of the Citizen."},
+  {y: 1796, k: 'p', ir: 1, t: "The Qajars", d: "Agha Mohammad Khan Qajar was crowned and Tehran became Iran's capital."},
+  {y: 1796, k: 's', t: "The first vaccine", d: "Edward Jenner's cowpox vaccine made it possible to prevent smallpox."},
+  {y: 1825, k: 's', t: "First public railway", d: "A steam train began running between Stockton and Darlington in England."},
+  {y: 1851, k: 's', ir: 1, t: "Dar ul-Funun", d: "Thanks to Amir Kabir, Iran's first modern school opened in Tehran."},
+  {y: 1859, k: 's', t: "Darwin's Origin of Species", d: "The theory of evolution by natural selection was published."},
+  {y: 1865, k: 'e', t: "Slavery abolished in the US", d: "The Thirteenth Amendment outlawed slavery in the United States."},
+  {y: 1876, k: 's', t: "The telephone", d: "Alexander Graham Bell was granted the patent for the telephone."},
+  {y: 1879, k: 's', t: "Edison's light bulb", d: "The first incandescent bulb that stayed lit for many hours."},
+  {y: 1903, k: 's', t: "The Wright brothers fly", d: "The first controlled flight of a powered airplane lasted 12 seconds."},
+  {y: 1905, k: 's', t: "Special relativity", d: "Einstein showed that time and space are not the same for every observer."},
+  {y: 1906, k: 'p', ir: 1, t: "Constitutional Revolution", d: "The constitutional decree was signed and Iran's first parliament opened."},
+  {y: 1908, k: 'e', ir: 1, t: "Oil at Masjed Soleyman", d: "The first oil well in the Middle East struck oil."},
+  {y: 1914, k: 'p', t: "World War I", d: "Four years of war that left nearly twenty million dead."},
+  {y: 1917, k: 'p', t: "The Russian Revolution", d: "The Bolsheviks took power, paving the way for the Soviet Union."},
+  {y: 1928, k: 's', t: "Penicillin", d: "Alexander Fleming discovered the first antibiotic by accident."},
+  {y: 1929, k: 'e', t: "The Great Depression", d: "The New York stock market crash dragged the world into the worst economic crisis of the 20th century."},
+  {y: 1939, k: 'p', t: "World War II", d: "The deadliest war in history began with Germany's invasion of Poland."},
+  {y: 1945.6, k: 'p', t: "Hiroshima and the end of the war", d: "The first atomic bombs were used and World War II came to an end."},
+  {y: 1945.8, k: 'p', t: "The United Nations", d: "Fifty-one founding countries adopted its charter."},
+  {y: 1947, k: 'p', t: "Indian independence", d: "British rule over India ended and Pakistan was partitioned off."},
+  {y: 1951, k: 'e', ir: 1, t: "Iranian oil nationalized", d: "Led by Mohammad Mosaddegh, Iran nationalized its oil industry."},
+  {y: 1953, k: 's', t: "The structure of DNA", d: "Watson and Crick, building on Rosalind Franklin's images, described the double helix."},
+  {y: 1957, k: 's', t: "Sputnik", d: "The first artificial satellite reached Earth orbit."},
+  {y: 1961, k: 's', t: "Gagarin in space", d: "Yuri Gagarin became the first human in space."},
+  {y: 1969.5, k: 's', t: "Moon landing", d: "Neil Armstrong and Buzz Aldrin walked on the Moon."},
+  {y: 1969.8, k: 's', t: "ARPANET", d: "The first message between two computers on the network that became the internet."},
+  {y: 1979, k: 'p', ir: 1, t: "The 1979 Revolution", d: "Iran's monarchy ended and the Islamic Republic was established."},
+  {y: 1980, k: 'p', ir: 1, t: "Iran–Iraq War", d: "A war that lasted eight years, until 1988."},
+  {y: 1989, k: 'p', t: "Fall of the Berlin Wall", d: "The symbol of the end of the Cold War and the start of German reunification."},
+  {y: 1991.6, k: 's', t: "The World Wide Web", d: "Tim Berners-Lee made the first website available to everyone."},
+  {y: 1991.95, k: 'p', t: "Collapse of the Soviet Union", d: "The USSR broke up into fifteen independent countries."},
+  {y: 1994, k: 'p', t: "Mandela becomes president", d: "South Africa's first election open to all races ended apartheid."},
+  {y: 2001, k: 'p', t: "September 11 attacks", d: "Attacks on New York and Washington launched the “war on terror”."},
+  {y: 2003, k: 's', t: "The human genome", d: "The Human Genome Project was completed after thirteen years."},
+  {y: 2007, k: 's', t: "The smartphone", d: "With the iPhone, the internet fit in people's pockets."},
+  {y: 2008, k: 'e', t: "Global financial crisis", d: "The collapse of the US housing market brought the world's largest banks to their knees."},
+  {y: 2015, k: 'e', t: "Paris climate agreement", d: "Countries agreed to keep global warming well below two degrees."},
+  {y: 2020, k: 'e', t: "COVID-19 pandemic", d: "The coronavirus locked down the world and millions of people died."},
+  {y: 2022.9, k: 's', t: "Conversational AI", d: "ChatGPT was released and talking to AI became part of everyday life."}
+];
+EVENTS.forEach((e, i) => e.i = i);
+
+/* ================================================================ نمایش سال */
+function yearLabel(y, withCa) {
+  const r = y < 0 ? Math.round(y) : Math.floor(y), ca = withCa ? 'c. ' : '';
+  return r < 0 ? `${ca}${yr(-r)} BCE` : `${ca}${yr(r)}`;
+}
+
+/* ================================================================ ساخت */
+const scroller = $('#scroller'), track = $('#track');
+const state = {cats: new Set(['p', 's', 'c', 'e']), iran: false};
+let PAD = 0, CW = 230, cards = [], dots = [];
+
+EVENTS.forEach(e => {
+  const el = document.createElement('article');
+  el.className = 'ev';
+  el.style.setProperty('--k', `var(--${e.k})`);
+  el.innerHTML = `<div class="y">${yearLabel(e.y, e.ca)}${e.ir ? '<span class="ir">Iran</span>' : ''}</div><h3>${e.t}</h3><p>${e.d}</p>`;
+  const dot = document.createElement('span');
+  dot.className = 'dot';
+  dot.style.setProperty('--k', `var(--${e.k})`);
+  track.append(el, dot);
+  e.el = el; e.dot = dot;
+});
+
+const visible = () => EVENTS.filter(e => state.cats.has(e.k) && (!state.iran || e.ir));
+
+/* ================================================================ چیدمان */
+function layout() {
+  const keep = centerYear();
+  const W = scroller.clientWidth, H = scroller.clientHeight;
+  PAD = Math.round(W / 2);
+  CW = W < 600 ? 196 : 232;
+  track.style.setProperty('--cw', CW + 'px');
+  track.style.width = (SPAN + PAD * 2) + 'px';
+  track.querySelectorAll('.band,.tick,.scale,.era').forEach(n => n.remove());
+
+  const vis = visible(), on = new Set(vis);
+  EVENTS.forEach(e => { e.el.hidden = !on.has(e); e.dot.hidden = !on.has(e); });
+
+  // ارتفاع کارت‌ها یکسان‌سازی می‌شود تا ردیف‌ها روی هم نیفتند
+  let cardH = 0;
+  vis.forEach(e => { e.el.style.top = '0px'; cardH = Math.max(cardH, e.el.offsetHeight); });
+  const BAND = 30, GAPV = 12, GAPH = 14;
+  const rows = clamp(Math.floor((H - BAND - 24) / (cardH + GAPV)), 2, 6);
+  const up = Math.ceil(rows / 2), down = rows - up;
+  const need = up * (cardH + GAPV) + 12 + BAND + 12 + down * (cardH + GAPV);
+  const axis = up * (cardH + GAPV) + 12 + Math.max(0, H - need) / 2;
+  track.style.height = Math.max(H, need) + 'px';
+
+  const band = document.createElement('div');
+  band.className = 'band';
+  band.style.top = axis + 'px';
+  track.prepend(band);
+
+  // ردیف‌ها به ترتیب نزدیکی به محور: بالا۱، پایین۱، بالا۲، ...
+  const lanes = [];
+  for (let k = 0; k < Math.max(up, down); k++) {
+    if (k < up) lanes.push({up: true, k, end: -Infinity});
+    if (k < down) lanes.push({up: false, k, end: -Infinity});
+  }
+  vis.slice().sort((a, b) => a.y - b.y || a.i - b.i).forEach(e => {
+    const x = X(e.y);
+    let best = lanes[0], bestX = Infinity;
+    lanes.forEach(l => { const px = Math.max(x, l.end + GAPH); if (px < bestX - .5) { bestX = px; best = l; } });
+    best.end = bestX + CW;
+    e.x = x;
+    const h = e.el.offsetHeight;
+    const top = best.up ? axis - 12 - best.k * (cardH + GAPV) - h : axis + BAND + 12 + best.k * (cardH + GAPV);
+    const stem = best.up ? axis - (top + h) : top - (axis + BAND);
+    e.el.style.left = (PAD + bestX - 14) + 'px';
+    e.el.style.top = top + 'px';
+    e.el.style.setProperty('--stem', stem + 'px');
+    e.el.classList.toggle('up', best.up);
+    e.el.classList.toggle('down', !best.up);
+    e.dot.style.left = (PAD + x) + 'px';
+    e.dot.style.top = (axis + BAND / 2 - 5.5) + 'px';
+  });
+
+  // خط‌کش سال‌ها
+  const steps = [[START, -3000, 1000, 1000], [-3000, 0, 500, 1000], [0, 1500, 100, 500], [1500, 1900, 25, 100], [1900, NOW, 5, 10]];
+  const frag = document.createDocumentFragment();
+  steps.forEach(([a, b, st, major]) => {
+    for (let y = a; y < b || (b === NOW && y <= NOW); y += st) {
+      const t = document.createElement('span');
+      t.className = 'tick' + (y % major === 0 ? ' major' : '');
+      t.style.top = axis + 'px';
+      t.style.left = (PAD + X(y)) + 'px';
+      t.textContent = y < 0 ? yr(-y) + ' BCE' : yr(y);
+      frag.appendChild(t);
+    }
+  });
+  SEGS.slice(1).forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'scale';
+    d.style.left = (PAD + s.x0) + 'px';
+    const perCentury = s.px * 100;
+    d.innerHTML = `<span>From here: ${fa(perCentury)} px per century · ${fa(s.px / SEGS[i].px, 1)}× zoom</span>`;
+    frag.appendChild(d);
+  });
+  ERAS.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'era';
+    d.style.left = (PAD + X(r.from) + 20) + 'px';
+    d.textContent = r.name;
+    frag.appendChild(d);
+  });
+  track.appendChild(frag);
+
+  buildMini(vis);
+  goYear(keep, true);
+}
+
+/* ================================================================ حرکت */
+const getPos = () => scroller.scrollLeft;
+function setPos(p, smooth) {
+  const max = scroller.scrollWidth - scroller.clientWidth;
+  scroller.scrollTo({left: clamp(p, 0, max), behavior: smooth && !reduce ? 'smooth' : 'auto'});
+}
+function centerYear() { return PAD ? Y(getPos() + scroller.clientWidth / 2 - PAD) : START; }
+function goYear(y, instant) { setPos(PAD + X(y) - scroller.clientWidth / 2, !instant); }
+
+/* ================================================================ نوار کل تاریخ */
+const mini = $('#mini');
+const lin = y => (y - START) / (NOW - START) * 100;
+let win;
+function buildMini(vis) {
+  mini.innerHTML = '';
+  ERAS.forEach((r, i) => {
+    const s = document.createElement('div');
+    s.className = 'seg';
+    const to = ERAS[i + 1] ? ERAS[i + 1].from : NOW;
+    s.style.left = lin(r.from) + '%';
+    s.style.width = (lin(to) - lin(r.from)) + '%';
+    s.style.background = `rgb(${r.c.map(v => Math.min(255, v * 2.2 | 0))})`;
+    s.title = r.name;
+    mini.appendChild(s);
+  });
+  vis.forEach(e => {
+    const t = document.createElement('span');
+    t.className = 'mt';
+    t.style.left = lin(e.y) + '%';
+    t.style.setProperty('--k', `var(--${e.k})`);
+    mini.appendChild(t);
+  });
+  win = document.createElement('div');
+  win.className = 'win';
+  mini.appendChild(win);
+}
+function miniYear(clientX) {
+  const r = mini.getBoundingClientRect();
+  return START + ((clientX - r.left) / r.width) * (NOW - START);
+}
+let dragging = false;
+mini.addEventListener('pointerdown', ev => { dragging = true; mini.setPointerCapture(ev.pointerId); goYear(miniYear(ev.clientX), true); });
+mini.addEventListener('pointermove', ev => { if (dragging) goYear(miniYear(ev.clientX), true); });
+mini.addEventListener('pointerup', () => { dragging = false; });
+mini.addEventListener('keydown', ev => {
+  if (ev.key === 'ArrowRight') { goYear(centerYear() + 250); ev.preventDefault(); }
+  if (ev.key === 'ArrowLeft') { goYear(centerYear() - 250); ev.preventDefault(); }
+});
+
+/* ================================================================ سال‌سنج */
+const gYear = $('#gYear'), gSub = $('#gSub'), gEra = $('#gEra');
+let lastY = null;
+function update() {
+  const y = centerYear();
+  const W = scroller.clientWidth, p = getPos();
+  const a = Y(p - PAD), b = Y(p + W - PAD);
+  if (win) { win.style.left = lin(a) + '%'; win.style.width = Math.max(0, lin(b) - lin(a)) + '%'; }
+  mini.setAttribute('aria-valuetext', yearLabel(y));
+  const r = Math.round(y);
+  if (r === lastY) return;
+  lastY = r;
+  document.body.style.backgroundColor = `rgb(${bgAt(y)})`;
+  gYear.innerHTML = r < 0 ? `${yr(-r)}<small>BCE</small>` : `${yr(r)}<small>CE</small>`;
+  const ago = NOW - r;
+  gSub.textContent = ago > 0 ? `${fa(ago)} years ago` : 'This year';
+  gEra.textContent = eraAt(y).name;
+}
+
+/* ================================================================ رویدادهای کاربر */
+let ticking = false;
+scroller.addEventListener('scroll', () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { ticking = false; update(); });
+}, {passive: true});
+
+// چرخ ماوس عمودی، زمان را جلو می‌برد
+scroller.addEventListener('wheel', ev => {
+  if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX) || ev.ctrlKey) return;
+  ev.preventDefault();
+  const k = ev.deltaMode === 1 ? 32 : ev.deltaMode === 2 ? scroller.clientWidth : 1;
+  setPos(getPos() + ev.deltaY * k);
+}, {passive: false});
+
+function step(dir) {
+  const c = getPos() + scroller.clientWidth / 2 - PAD;
+  const xs = visible().map(e => e.x).sort((a, b) => a - b);
+  const target = dir > 0 ? xs.find(x => x > c + 4) : xs.reverse().find(x => x < c - 4);
+  if (target !== undefined) setPos(PAD + target - scroller.clientWidth / 2, true);
+}
+$('#next').addEventListener('click', () => step(1));
+$('#prev').addEventListener('click', () => step(-1));
+addEventListener('keydown', ev => {
+  if (ev.target.closest && ev.target.closest('.mini')) return;
+  if (ev.key === 'ArrowRight') { step(1); ev.preventDefault(); }
+  if (ev.key === 'ArrowLeft') { step(-1); ev.preventDefault(); }
+  if (ev.key === 'Home') { goYear(START); ev.preventDefault(); }
+  if (ev.key === 'End') { goYear(NOW); ev.preventDefault(); }
+});
+
+document.querySelectorAll('.chip[data-cat]').forEach(b => b.addEventListener('click', () => {
+  const on = b.getAttribute('aria-pressed') !== 'true';
+  if (!on && state.cats.size === 1) return; // دست‌کم یک دسته روشن بماند
+  b.setAttribute('aria-pressed', on);
+  on ? state.cats.add(b.dataset.cat) : state.cats.delete(b.dataset.cat);
+  layout(); update();
+}));
+$('#iranOnly').addEventListener('click', ev => {
+  state.iran = !state.iran;
+  ev.currentTarget.setAttribute('aria-pressed', state.iran);
+  layout(); update();
+});
+
+let rt;
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); lastY = null; update(); }, 120); });
+
+layout();
+goYear(-10000 + 1800, true);
+update();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layout(); lastY = null; update(); });
+})();
+</script>
+</body>
+</html>
