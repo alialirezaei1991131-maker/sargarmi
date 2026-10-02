@@ -97,6 +97,16 @@ a{color:inherit}
 .flow{animation:flow 14s linear infinite}
 @keyframes flow{to{transform:translateX(-200px)}}
 
+/* دکمهٔ زبان */
+.langsw{position:absolute;top:16px;inset-inline-end:16px;z-index:2;display:inline-flex;padding:3px;gap:2px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.langsw button{font:inherit;font-size:.84rem;font-weight:600;color:var(--ink-dim);background:none;border:0;border-radius:999px;padding:3px 14px;cursor:pointer;transition:background .2s,color .2s}
+.langsw button:hover{color:var(--ink)}
+.langsw button[aria-pressed="true"]{background:rgba(255,255,255,.14);color:var(--ink)}
+[dir="ltr"] .go svg{transform:scaleX(-1)}
+[dir="ltr"] .card:hover .go svg,[dir="ltr"] .card:focus-visible .go svg{transform:scaleX(-1) translateX(-6px)}
+[dir="ltr"] .meta .en{font-family:var(--font);direction:rtl}
+
 .foot{text-align:center;font-size:.84rem;color:var(--ink-faint)}
 .foot kbd{font-family:inherit;border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--ink-dim)}
 
@@ -114,16 +124,21 @@ a{color:inherit}
 <div class="glow a"></div><div class="glow b"></div><div class="glow c"></div>
 <canvas id="sky" aria-hidden="true"></canvas>
 
+<nav class="langsw" aria-label="Language / زبان">
+  <button type="button" data-lang="fa" lang="fa">فارسی</button>
+  <button type="button" data-lang="en" lang="en">English</button>
+</nav>
+
 <div class="wrap">
   <header class="head">
-    <span class="eyebrow">سه سفر تعاملی</span>
-    <h1>سرگرمی</h1>
-    <p>یکی را انتخاب کنید: به اعماق اقیانوس شیرجه بزنید، تا لبهٔ فضا بالا بروید یا دوازده هزار سال تاریخ را ورق بزنید.</p>
+    <span class="eyebrow" data-i18n="eyebrow">سه سفر تعاملی</span>
+    <h1 data-i18n="title">سرگرمی</h1>
+    <p data-i18n="lead">یکی را انتخاب کنید: به اعماق اقیانوس شیرجه بزنید، تا لبهٔ فضا بالا بروید یا دوازده هزار سال تاریخ را ورق بزنید.</p>
   </header>
 
   <main class="cards">
     <!-- اعماق اقیانوس -->
-    <a class="card deep" href="deep/index.html" style="--i:0" data-key="1">
+    <a class="card deep" href="deep/fa.html" data-app="deep" style="--i:0" data-key="1">
       <div class="scene">
         <svg viewBox="0 0 400 310" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
@@ -160,17 +175,17 @@ a{color:inherit}
         </svg>
       </div>
       <div class="body">
-        <div class="meta"><span class="tag">۱۱ کیلومتر به پایین</span><span class="en">Into the Deep</span></div>
-        <h2>اعماق اقیانوس</h2>
-        <p>از سطح آب تا کف گودال ماریانا. پایین بروید و ببینید در هر عمق چه جانورانی زندگی می‌کنند.</p>
-        <span class="go">شیرجه بزنید
+        <div class="meta"><span class="tag" data-i18n="deepTag">۱۱ کیلومتر به پایین</span><span class="en" data-i18n="deepAlt">Into the Deep</span></div>
+        <h2 data-i18n="deepTitle">اعماق اقیانوس</h2>
+        <p data-i18n="deepText">از سطح آب تا کف گودال ماریانا. پایین بروید و ببینید در هر عمق چه جانورانی زندگی می‌کنند.</p>
+        <span class="go"><span data-i18n="deepGo">شیرجه بزنید</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
         </span>
       </div>
     </a>
 
     <!-- تا لبهٔ فضا -->
-    <a class="card space" href="space/index.html" style="--i:1" data-key="2">
+    <a class="card space" href="space/fa.html" data-app="space" style="--i:1" data-key="2">
       <div class="scene">
         <svg viewBox="0 0 400 310" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
@@ -188,7 +203,7 @@ a{color:inherit}
               <circle class="tw" cx="80" cy="70" r="1" style="animation-delay:-.8s"/><circle class="tw" cx="300" cy="80" r="1.2" style="animation-delay:-2.8s"/>
             </g>
             <path d="M0 96H400" stroke="#ffc46b" stroke-dasharray="6 6" stroke-width="1.2" opacity=".7"/>
-            <text x="378" y="88" direction="ltr" fill="#ffc46b" font-size="11" text-anchor="end" font-family="Vazirmatn,Tahoma,sans-serif" opacity=".85">خط کارمن · ۱۰۰ کیلومتر</text>
+            <text x="378" y="88" direction="ltr" fill="#ffc46b" font-size="11" text-anchor="end" font-family="Vazirmatn,Tahoma,sans-serif" opacity=".85" data-i18n="karman">خط کارمن · ۱۰۰ کیلومتر</text>
             <g class="rocket" transform="translate(96 130)">
               <path d="M0 40V10q10-22 20 0v30z" fill="#eef4fb"/><path d="M0 28l-10 16h10zM20 28l10 16h-10z" fill="#e8552b"/>
               <circle cx="10" cy="16" r="4" fill="#6fd3ff"/>
@@ -207,17 +222,17 @@ a{color:inherit}
         </svg>
       </div>
       <div class="body">
-        <div class="meta"><span class="tag">۱۰۰ کیلومتر به بالا</span><span class="en">Up to Space</span></div>
-        <h2>تا لبهٔ فضا</h2>
-        <p>از زمین تا جایی که آسمان سیاه می‌شود. بالا بروید و ببینید در هر ارتفاع چه چیزی پرواز می‌کند.</p>
-        <span class="go">پرواز کنید
+        <div class="meta"><span class="tag" data-i18n="spaceTag">۱۰۰ کیلومتر به بالا</span><span class="en" data-i18n="spaceAlt">Up to Space</span></div>
+        <h2 data-i18n="spaceTitle">تا لبهٔ فضا</h2>
+        <p data-i18n="spaceText">از زمین تا جایی که آسمان سیاه می‌شود. بالا بروید و ببینید در هر ارتفاع چه چیزی پرواز می‌کند.</p>
+        <span class="go"><span data-i18n="spaceGo">پرواز کنید</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
         </span>
       </div>
     </a>
 
     <!-- رود زمان -->
-    <a class="card time" href="time/index.html" style="--i:2" data-key="3">
+    <a class="card time" href="time/fa.html" data-app="time" style="--i:2" data-key="3">
       <div class="scene">
         <svg viewBox="0 0 400 310" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
@@ -228,7 +243,7 @@ a{color:inherit}
           </defs>
           <g class="zoom">
             <rect width="400" height="310" fill="url(#era)"/>
-            <text x="200" y="74" fill="#fff" opacity=".07" font-size="64" font-weight="700" text-anchor="middle" font-family="Vazirmatn,Tahoma,sans-serif">۱۲٬۰۰۰ سال</text>
+            <text x="200" y="74" fill="#fff" opacity=".07" font-size="64" font-weight="700" text-anchor="middle" font-family="Vazirmatn,Tahoma,sans-serif" data-i18n="years">۱۲٬۰۰۰ سال</text>
             <!-- اهرام -->
             <path d="M300 168l34-44 34 44z" fill="#6e5136"/><path d="M334 124l34 44h-18z" fill="#4e3a27"/>
             <path d="M262 168l22-28 22 28z" fill="#5a422c"/>
@@ -255,16 +270,16 @@ a{color:inherit}
               <rect x="296" y="228" width="84" height="34" rx="8"/><rect x="164" y="236" width="88" height="34" rx="8"/><rect x="20" y="228" width="84" height="34" rx="8"/>
             </g>
             <g fill="#c2b8aa" font-size="11" font-family="Vazirmatn,Tahoma,sans-serif" text-anchor="middle">
-              <text x="338" y="250">۲۵۶۰ پ.م</text><text x="208" y="258">۵۵۰ پ.م</text><text x="62" y="250">۱۹۵۷</text>
+              <text x="338" y="250" data-i18n="d1">۲۵۶۰ پ.م</text><text x="208" y="258" data-i18n="d2">۵۵۰ پ.م</text><text x="62" y="250" data-i18n="d3">۱۹۵۷</text>
             </g>
           </g>
         </svg>
       </div>
       <div class="body">
-        <div class="meta"><span class="tag">۱۲٬۰۰۰ سال</span><span class="en">River of Time</span></div>
-        <h2>رود زمان</h2>
-        <p>تاریخ جهان و ایران روی یک خط زمان؛ از نخستین کشتزارها تا هوش مصنوعی امروز.</p>
-        <span class="go">سفر در زمان
+        <div class="meta"><span class="tag" data-i18n="timeTag">۱۲٬۰۰۰ سال</span><span class="en" data-i18n="timeAlt">River of Time</span></div>
+        <h2 data-i18n="timeTitle">رود زمان</h2>
+        <p data-i18n="timeText">تاریخ جهان و ایران روی یک خط زمان؛ از نخستین کشتزارها تا هوش مصنوعی امروز.</p>
+        <span class="go"><span data-i18n="timeGo">سفر در زمان</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
         </span>
       </div>
@@ -272,7 +287,7 @@ a{color:inherit}
   </main>
 
   <footer class="foot">
-    <span class="keys">میان‌بر: کلیدهای <kbd>۱</kbd> <kbd>۲</kbd> <kbd>۳</kbd> · </span>متن خودِ برنامه‌ها به زبان انگلیسی است.
+    <span class="keys"><span data-i18n="keys">میان‌بر: کلیدهای</span> <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> · </span><span data-i18n="foot">زبان را از دکمهٔ بالای صفحه عوض کنید؛ همهٔ بخش‌ها به همان زبان باز می‌شوند.</span>
   </footer>
 </div>
 
@@ -282,6 +297,47 @@ a{color:inherit}
 // میان‌بر صفحه‌کلید: ۱ تا ۳ (فارسی یا لاتین)
 const map = {'1': 0, '2': 1, '3': 2, '۱': 0, '۲': 1, '۳': 2};
 const cards = document.querySelectorAll('.card');
+
+// زبان: فارسی یا انگلیسی؛ انتخاب در مرورگر می‌ماند و برنامه‌ها هم به همان زبان باز می‌شوند
+const T = {
+  fa: {
+    pageTitle: 'سرگرمی', eyebrow: 'سه سفر تعاملی', title: 'سرگرمی',
+    lead: 'یکی را انتخاب کنید: به اعماق اقیانوس شیرجه بزنید، تا لبهٔ فضا بالا بروید یا دوازده هزار سال تاریخ را ورق بزنید.',
+    deepTag: '۱۱ کیلومتر به پایین', deepAlt: 'Into the Deep', deepTitle: 'اعماق اقیانوس',
+    deepText: 'از سطح آب تا کف گودال ماریانا. پایین بروید و ببینید در هر عمق چه جانورانی زندگی می‌کنند.', deepGo: 'شیرجه بزنید',
+    spaceTag: '۱۰۰ کیلومتر به بالا', spaceAlt: 'Up to Space', spaceTitle: 'تا لبهٔ فضا',
+    spaceText: 'از زمین تا جایی که آسمان سیاه می‌شود. بالا بروید و ببینید در هر ارتفاع چه چیزی پرواز می‌کند.', spaceGo: 'پرواز کنید',
+    timeTag: '۱۲٬۰۰۰ سال', timeAlt: 'River of Time', timeTitle: 'رود زمان',
+    timeText: 'تاریخ جهان و ایران روی یک خط زمان؛ از نخستین کشتزارها تا هوش مصنوعی امروز.', timeGo: 'سفر در زمان',
+    karman: 'خط کارمن · ۱۰۰ کیلومتر', years: '۱۲٬۰۰۰ سال', d1: '۲۵۶۰ پ.م', d2: '۵۵۰ پ.م', d3: '۱۹۵۷',
+    keys: 'میان‌بر: کلیدهای', foot: 'زبان را از دکمهٔ بالای صفحه عوض کنید؛ همهٔ بخش‌ها به همان زبان باز می‌شوند.'
+  },
+  en: {
+    pageTitle: 'Sargarmi', eyebrow: 'Three interactive journeys', title: 'Sargarmi',
+    lead: 'Pick one: dive to the bottom of the ocean, climb to the edge of space, or leaf through twelve thousand years of history.',
+    deepTag: '11 km down', deepAlt: 'اعماق اقیانوس', deepTitle: 'Into the Deep',
+    deepText: 'From the surface to the floor of the Mariana Trench. Scroll down to see which animals live at each depth.', deepGo: 'Dive in',
+    spaceTag: '100 km up', spaceAlt: 'تا لبهٔ فضا', spaceTitle: 'Up to Space',
+    spaceText: 'From the ground to where the sky turns black. Scroll up to see what flies at each altitude.', spaceGo: 'Take off',
+    timeTag: '12,000 years', timeAlt: 'رود زمان', timeTitle: 'River of Time',
+    timeText: 'World and Iranian history on a single timeline, from the first farms to today\'s AI.', timeGo: 'Travel in time',
+    karman: 'Kármán line · 100 km', years: '12,000 years', d1: '2560 BCE', d2: '550 BCE', d3: '1957',
+    keys: 'Shortcuts:', foot: 'Switch language with the button at the top; every journey opens in the same language.'
+  }
+};
+const KEY = 'sargarmi-lang';
+function getLang() { try { return localStorage.getItem(KEY) === 'en' ? 'en' : 'fa'; } catch (e) { return 'fa'; } }
+function setLang(lang) {
+  try { localStorage.setItem(KEY, lang); } catch (e) {}
+  const t = T[lang], root = document.documentElement;
+  root.lang = lang; root.dir = lang === 'fa' ? 'rtl' : 'ltr';
+  document.title = t.pageTitle;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+  cards.forEach(c => c.setAttribute('href', `${c.dataset.app}/${lang === 'fa' ? 'fa' : 'index'}.html`));
+  document.querySelectorAll('.langsw button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+}
+document.querySelectorAll('.langsw button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+setLang(getLang());
 addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key in map) location.href = cards[map[e.key]].getAttribute('href');

@@ -140,6 +140,7 @@ button{font:inherit;color:inherit}
 .g-track span{position:absolute;left:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
   background:var(--warm);box-shadow:0 0 10px var(--warm)}
 
+.lang a{color:inherit;text-decoration:none}.lang a:hover{text-decoration:underline}
 @media (max-width:899px){
   .creature,.marker{width:100%;max-width:440px;left:0;right:0;margin-inline:auto}
   .item[data-lane="0"]{right:0}
@@ -213,7 +214,7 @@ button{font:inherit;color:inherit}
     </g>
   </svg>
   <div class="intro">
-    <a class="lang" href="../index.html" lang="fa">← صفحهٔ اصلی</a>
+    <nav class="lang" aria-label="Site"><a href="../index.html" onclick="try{localStorage.setItem('sargarmi-lang','en')}catch(e){}">← Home</a> · <a href="fa.html" lang="fa" hreflang="fa" onclick="try{localStorage.setItem('sargarmi-lang','fa')}catch(e){}">فارسی</a></nav>
     <span class="eyebrow">100 kilometers to the edge of space</span>
     <h1>Up to Space</h1>
     <p>From the ground to where the sky turns black and space begins. Scroll up to see what flies at each altitude and how high people have gone.</p>

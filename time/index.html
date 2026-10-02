@@ -132,7 +132,8 @@ a.chip{text-decoration:none;color:var(--ink)}
       <button class="chip" type="button" data-cat="c" aria-pressed="true" style="--k:var(--c)"><i></i>Culture &amp; religion</button>
       <button class="chip" type="button" data-cat="e" aria-pressed="true" style="--k:var(--e)"><i></i>Economy &amp; society</button>
       <button class="chip iran" type="button" id="iranOnly" aria-pressed="false">Iran only</button>
-      <a class="chip lang" href="../index.html" lang="fa">← صفحهٔ اصلی</a>
+      <a class="chip" href="../index.html" onclick="try{localStorage.setItem('sargarmi-lang','en')}catch(e){}" style="color:var(--ink);text-decoration:none">← Home</a>
+      <a class="chip lang" href="fa.html" lang="fa" hreflang="fa" onclick="try{localStorage.setItem('sargarmi-lang','fa')}catch(e){}">فارسی</a>
     </div>
   </header>
 

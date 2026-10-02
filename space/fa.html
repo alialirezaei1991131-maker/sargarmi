@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تا لبهٔ فضا</title>
+<meta name="description" content="از زمین تا لبهٔ فضا: بالا بروید و ببینید در هر ارتفاع چه چیزی پرواز می‌کند.">
+<style>
+/* وزیرمتن، ساخته صابر راستی‌کردار، پروانه SIL Open Font */
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Vazirmatn';src:url('../assets/fonts/Vazirmatn-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+
+/* یک دنیای بصری واحد (آسمان)، پس فقط یک پوسته دارد و همه رنگ‌ها صریح‌اند. */
+:root{
+  color-scheme:dark;
+  --ink:#eef4fb;
+  --ink-dim:#b3c3dc;
+  --ink-faint:#7d8fae;
+  --glow:#9fd8ff;
+  --warm:#ffc46b;
+  --panel:rgba(6,14,34,.64);
+  --line:rgba(190,215,255,.32);
+  --ink-l:#0c2742;
+  --ink-l-dim:#2e4f6c;
+  --panel-l:rgba(255,255,255,.72);
+  --line-l:rgba(12,39,66,.3);
+  --soil:#241b14;
+  --space:#01030b;
+  --font:'Vazirmatn',Tahoma,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--space);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.3}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:6px}
+
+/* ------------------------------------------------ لایه‌های ثابت پس‌زمینه */
+#air{position:fixed;inset:0;z-index:0;background:#87c8eb}
+#stars{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+
+/* ------------------------------------------------ مرز فضا (بالای صفحه) */
+.space{position:relative;z-index:2;padding-inline:16px;padding-block:80px 110px;
+  background:linear-gradient(0deg,rgba(1,3,11,0) 0,var(--space) 110px,var(--space) 100%)}
+.space-inner{max-width:640px;margin-inline:auto;display:grid;gap:16px}
+.space .r{color:var(--warm);font-weight:600;font-variant-numeric:tabular-nums}
+.space h2{font-size:clamp(2rem,5vw,3rem)}
+.space ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.space li{display:grid;grid-template-columns:6.4rem 1fr;gap:12px;color:var(--ink-dim)}
+.space li b{color:var(--ink);font-variant-numeric:tabular-nums}
+.down{justify-self:start;border:1px solid var(--line);background:rgba(159,216,255,.08);border-radius:999px;
+  padding:9px 20px;font-weight:600;cursor:pointer;transition:background .2s}
+.down:hover{background:rgba(159,216,255,.18)}
+.credit{font-size:.84rem;color:var(--ink-faint);border-top:1px solid rgba(190,215,255,.15);padding-top:16px}
+.karman{position:absolute;inset:auto 0 60px 0;border-top:1px dashed rgba(255,196,107,.6)}
+
+/* ------------------------------------------------ آسمان */
+#sky{position:relative;z-index:2;overflow-x:clip}
+#lanes{position:relative;height:100%;margin-inline:16px}
+.puff{position:absolute;height:34px;border-radius:34px;background:rgba(255,255,255,.75);pointer-events:none}
+.puff::before,.puff::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.puff::before{width:56%;aspect-ratio:1;bottom:30%;right:16%}
+.puff::after{width:36%;aspect-ratio:1;bottom:40%;right:56%}
+.item{position:absolute}
+
+.creature,.marker{width:min(380px,calc(50% - 36px))}
+.item[data-lane="0"]{right:calc(var(--j) * 1%)}
+.item[data-lane="1"]{left:calc(var(--j) * 1%)}
+.creature{display:grid;gap:10px}
+.art{width:calc(var(--s) * 100%);margin-inline:auto}
+.art svg{display:block;width:100%;height:auto;overflow:visible;animation:float 8s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes float{50%{transform:translateY(-6px)}}
+.card{background:var(--panel);border:1px solid rgba(190,215,255,.14);border-radius:14px;padding:14px 16px;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:grid;gap:4px}
+.card header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card h3{font-size:1.14rem;font-weight:700}
+.card .d{font-size:.84rem;font-weight:600;color:var(--glow);font-variant-numeric:tabular-nums;white-space:nowrap}
+.card p{font-size:.93rem;color:var(--ink-dim)}
+
+.marker{border-bottom:1px dashed var(--line);padding-bottom:8px;display:grid;gap:2px}
+.marker strong{font-size:.95rem;font-weight:600;display:flex;gap:10px;flex-wrap:wrap}
+.marker strong span{color:var(--warm);font-variant-numeric:tabular-nums}
+.marker p{font-size:.88rem;color:var(--ink-dim)}
+
+.zone{left:0;right:0;border-bottom:1px solid rgba(190,215,255,.45);padding-bottom:18px;display:grid;gap:6px}
+.zone .n{font-size:.8rem;font-weight:600;color:var(--ink-dim);letter-spacing:.03em}
+.zone h2{font-size:clamp(1.8rem,4.4vw,2.7rem);font-weight:700}
+.zone .r{font-size:.95rem;font-weight:500;color:var(--glow);font-variant-numeric:tabular-nums}
+.zone p{max-width:58ch;color:var(--ink)}
+
+.fact{left:0;right:0;text-align:center;display:grid;justify-items:center}
+.fact p{max-width:34ch;font-size:1.12rem;font-weight:500;color:var(--ink-dim);line-height:1.9}
+
+/* آسمان روشنِ ارتفاع کم: متن تیره روی زمینهٔ روشن */
+.item[data-tone="light"] .card{background:var(--panel-l);border-color:rgba(12,39,66,.12)}
+.item[data-tone="light"] .card h3,.item[data-tone="light"].marker strong,.item[data-tone="light"] h2{color:var(--ink-l)}
+.item[data-tone="light"] .card p,.item[data-tone="light"].marker p,.item[data-tone="light"] .n,.item[data-tone="light"].fact p{color:var(--ink-l-dim)}
+.item[data-tone="light"] .card .d,.item[data-tone="light"] .r{color:#0a5f93}
+.item[data-tone="light"].marker strong span{color:#a4430c}
+.item[data-tone="light"].marker{border-color:var(--line-l)}
+.item[data-tone="light"].zone{border-color:rgba(12,39,66,.4)}
+.item[data-tone="light"].zone p{color:var(--ink-l)}
+
+/* ------------------------------------------------ زمین (پایین صفحه) */
+.ground{position:relative;z-index:3;overflow-x:clip;color:var(--ink);padding-inline:16px;padding-block:0 clamp(60px,9vh,110px);
+  background:linear-gradient(180deg,transparent 0 149px,#1b2430 149px,#241d17 290px,var(--soil) 100%)}
+.skyline{display:block;width:calc(100% + 32px);margin-inline:-16px;height:150px;margin-top:-149px;position:relative}
+.intro{position:relative;max-width:640px;margin-inline:auto;display:grid;gap:14px;padding-top:28px}
+.eyebrow{font-size:.82rem;font-weight:600;letter-spacing:.02em;color:var(--warm)}
+.intro h1{font-size:clamp(2.6rem,7vw,4.4rem);font-weight:700;letter-spacing:-.01em}
+.intro p{font-size:1.08rem;color:var(--ink-dim);max-width:52ch}
+.intro .scale{font-size:.88rem}
+.lang{position:absolute;top:28px;inset-inline-end:0;border:1px solid rgba(190,215,255,.3);background:rgba(255,255,255,.06);
+  color:var(--ink);border-radius:999px;padding:3px 14px;font-size:.85rem;font-weight:600;text-decoration:none}
+.lang:hover{background:rgba(255,255,255,.16)}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.jump button{border:1px solid rgba(190,215,255,.3);background:rgba(255,255,255,.06);border-radius:999px;
+  padding:5px 14px;font-size:.88rem;cursor:pointer;transition:background .2s}
+.jump button:hover{background:rgba(255,255,255,.16)}
+.climb{display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-top:8px}
+.climb svg{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(-5px)}}
+
+/* ------------------------------------------------ ارتفاع‌سنج */
+.gauge{position:fixed;z-index:10;left:20px;top:50%;transform:translateY(-50%);width:162px;
+  background:rgba(6,14,34,.72);border:1px solid rgba(190,215,255,.2);border-radius:16px;padding:14px 16px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:grid;gap:8px;color:var(--ink)}
+.g-depth{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.g-depth b{font-size:1.9rem;font-weight:700;line-height:1}
+.g-depth small{color:var(--ink-dim)}
+.g-zone{font-size:.86rem;font-weight:600;color:var(--glow);min-height:1.4em}
+.g-stats{margin:0;display:grid;gap:4px;font-size:.8rem}
+.g-stats div{display:flex;justify-content:space-between;gap:8px}
+.g-stats dt{color:var(--ink-faint)}
+.g-stats dd{margin:0;font-variant-numeric:tabular-nums}
+.g-track{position:relative;height:120px;width:4px;border-radius:2px;background:rgba(190,215,255,.18);margin-inline:auto;margin-top:4px}
+.g-track i{position:absolute;right:-5px;left:-5px;height:1px;background:rgba(190,215,255,.4)}
+.g-track span{position:absolute;left:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
+  background:var(--warm);box-shadow:0 0 10px var(--warm)}
+
+.lang a{color:inherit;text-decoration:none}.lang a:hover{text-decoration:underline}
+@media (max-width:899px){
+  .creature,.marker{width:100%;max-width:440px;left:0;right:0;margin-inline:auto}
+  .item[data-lane="0"]{right:0}
+  .gauge{top:auto;bottom:0;left:0;right:0;transform:none;width:auto;border-radius:0;border-width:1px 0 0;
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
+    grid-template-columns:auto 1fr auto;align-items:center;gap:14px}
+  .g-depth b{font-size:1.4rem}
+  .g-stats{grid-auto-flow:column;gap:12px}
+  .g-stats div{display:grid;gap:0;text-align:center}
+  .g-stats .opt{display:none}
+  .g-track{display:none}
+  .ground{padding-bottom:130px}
+}
+@media (min-width:900px){
+  #lanes{width:min(1080px,calc(100% - 236px));margin-left:max(212px,calc(50% - 540px));margin-right:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="air"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<section class="space" id="top">
+  <div class="space-inner">
+    <span class="r">۱۰۰ کیلومتر بالاتر از سطح دریا</span>
+    <h2>خط کارمن، لبهٔ فضا</h2>
+    <p>بیشتر نهادهای بین‌المللی این‌جا را مرز جوّ زمین و فضا می‌دانند. هوا آن‌قدر رقیق است که بال دیگر چیزی را بالا نگه نمی‌دارد؛ برای ماندن در این ارتفاع باید با سرعت مداری دور زمین بچرخید.</p>
+    <ul>
+      <li><b>۱۹۶۱</b><span>یوری گاگارین نخستین انسانی شد که به فضا رفت و یک دور کامل زمین را چرخید.</span></li>
+      <li><b>۴۰۸ کیلومتر</b><span>ایستگاه فضایی بین‌المللی. از سال ۲۰۰۰ همیشه کسی در آن زندگی کرده و تقریباً هر ۹۰ دقیقه یک بار زمین را دور می‌زند.</span></li>
+      <li><b>۳۸۴٬۴۰۰ کیلومتر</b><span>فاصله تا ماه. با مقیاس این صفحه، پیمایش تا ماه حدود ۶۱ کیلومتر صفحه لازم داشت.</span></li>
+    </ul>
+    <button class="down" type="button" id="toGround">بازگشت به زمین</button>
+    <p class="credit">الهام‌گرفته از «The Deep Sea» و «Space Elevator» اثر نیل آگاروال. همهٔ تصویرها و متن‌های این صفحه از نو ساخته شده‌اند. ارتفاع‌ها تقریبی‌اند و از سطح دریا یا از پای هر سازه اندازه گرفته شده‌اند.</p>
+  </div>
+  <div class="karman"></div>
+</section>
+
+<main id="sky">
+  <div id="lanes"></div>
+</main>
+
+<header class="ground">
+  <svg class="skyline" viewBox="0 0 1200 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path fill="#6e8196" d="M0 118L90 70L150 92L240 40L300 66L360 30L430 76L520 52L600 88L700 34L760 62L850 44L940 82L1030 50L1110 78L1200 58V150H0z"/>
+    <path fill="#e8eef4" d="M228 47l12-7 12 9-8 3-6-4-6 4zM352 35l8-5 10 8-7 2-5-3zM690 40l10-6 12 8-8 3-5-4z"/>
+    <path fill="#394859" d="M0 128L120 104L260 118L420 100L560 116L720 102L900 118L1060 104L1200 116V150H0z"/>
+    <g fill="#1b2430">
+      <rect x="30" y="112" width="40" height="38"/><rect x="76" y="98" width="28" height="52"/><rect x="110" y="118" width="54" height="32"/>
+      <rect x="170" y="104" width="30" height="46"/><rect x="206" y="92" width="22" height="58"/><rect x="236" y="116" width="60" height="34"/>
+      <rect x="300" y="100" width="34" height="50"/><rect x="340" y="120" width="70" height="30"/><rect x="416" y="96" width="26" height="54"/>
+      <rect x="448" y="110" width="48" height="40"/><rect x="502" y="88" width="30" height="62"/><rect x="540" y="114" width="64" height="36"/>
+      <rect x="610" y="102" width="36" height="48"/><rect x="652" y="118" width="58" height="32"/><rect x="716" y="94" width="28" height="56"/>
+      <rect x="872" y="108" width="44" height="42"/><rect x="922" y="96" width="30" height="54"/><rect x="958" y="116" width="66" height="34"/>
+      <rect x="1030" y="100" width="34" height="50"/><rect x="1070" y="114" width="56" height="36"/><rect x="1132" y="104" width="68" height="46"/>
+      <path d="M800 150L804 50h8l4 100z"/>
+      <path d="M781 46h54l-6 12h-42z"/><ellipse cx="808" cy="43" rx="22" ry="7"/>
+      <path d="M806 36h4V2h-4z"/>
+    </g>
+  </svg>
+  <div class="intro">
+    <nav class="lang" aria-label="پیمایش"><a href="../index.html" onclick="try{localStorage.setItem('sargarmi-lang','fa')}catch(e){}">صفحهٔ اصلی →</a> · <a href="index.html" lang="en" hreflang="en" onclick="try{localStorage.setItem('sargarmi-lang','en')}catch(e){}">English</a></nav>
+    <span class="eyebrow">۱۰۰ کیلومتر تا لبهٔ فضا</span>
+    <h1>تا لبهٔ فضا</h1>
+    <p>از زمین تا جایی که آسمان سیاه می‌شود و فضا آغاز می‌شود. بالا بروید تا ببینید در هر ارتفاع چه چیزی پرواز می‌کند و انسان تا کجا بالا رفته است.</p>
+    <p class="scale">مقیاس واقعی است: هر ۱۰ متر ارتفاع برابر <span id="scaleTxt">۶</span> پیکسل پیمایش است.</p>
+    <nav class="jump" aria-label="پرش به یک لایه">
+      <button type="button" data-go="0">وردسپهر</button>
+      <button type="button" data-go="12000">پوشن‌سپهر</button>
+      <button type="button" data-go="50000">میان‌سپهر</button>
+      <button type="button" data-go="85000">گرماسپهر</button>
+      <button type="button" data-go="top">لبهٔ فضا</button>
+    </nav>
+    <span class="climb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5M5 12l7-7 7 7"/></svg>
+      بالا بروید
+    </span>
+  </div>
+</header>
+
+<aside class="gauge" aria-label="ارتفاع‌سنج">
+  <div class="g-depth"><b id="gAlt">0</b><small id="gUnit">متر</small></div>
+  <div class="g-zone" id="gZone">سطح زمین</div>
+  <dl class="g-stats">
+    <div><dt>فشار هوا</dt><dd id="gP">۱ اتمسفر</dd></div>
+    <div><dt>دما</dt><dd id="gT">۱۵°C</dd></div>
+    <div class="opt"><dt>هوای زیر پای شما</dt><dd id="gB">٪۰</dd></div>
+  </dl>
+  <div class="g-track" id="gTrack"><span id="gDot"></span></div>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+const SCALE = 0.6;        // پیکسل به ازای هر متر
+const TOP = 100000;       // خط کارمن
+const GAP = 28;
+const BASE = 150;         // ارتفاع نوار شهر که روی پایین آسمان می‌نشیند
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const fa = (n, d = 0) => Number(n).toLocaleString('fa-IR', {maximumFractionDigits: d, minimumFractionDigits: d});
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* ================================================================ تصویرها */
+let uid = 0;
+const svg = (vb, inner) => `<svg viewBox="${vb}" aria-hidden="true" focusable="false">${inner}</svg>`;
+const grad = (stops, v = true) => {
+  const id = 'g' + (++uid);
+  return [id, `<linearGradient id="${id}" x1="0" y1="0" x2="${v ? 0 : 1}" y2="${v ? 1 : 0}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient>`];
+};
+
+function mountain(o) {
+  let g = `<path d="${o.body}" fill="${o.c}" stroke="${o.st}" stroke-width="1.4"/>`;
+  g += `<path d="${o.shade}" fill="rgba(0,0,0,.18)"/><path d="${o.snow}" fill="#f4f7fa"/>`;
+  return svg('0 0 240 140', g + (o.extra || ''));
+}
+
+const ART = {
+  tree: () => {
+    let g = `<path d="M55 220L58 40h6l3 180z" fill="#6b3f25"/>`;
+    for (let i = 0; i < 9; i++) {
+      const cy = 24 + i * 19, rx = 9 + i * 4.2;
+      g += `<ellipse cx="${61 + (i % 2 ? 3 : -3)}" cy="${cy}" rx="${rx}" ry="15" fill="${i % 2 ? '#2f5d3a' : '#3c7047'}"/>`;
+    }
+    return svg('0 4 122 218', g);
+  },
+  cloud: () => {
+    let g = `<path d="M30 104h160a26 26 0 0 0 0-52 44 44 0 0 0-84-14 34 34 0 0 0-56 30 20 20 0 0 0-20 36z" fill="#ffffff"/>`;
+    g += `<path d="M30 104h160a26 26 0 0 0 20-10H14a20 20 0 0 0 16 10z" fill="#d9e6f1"/>`;
+    return svg('0 18 220 92', g);
+  },
+  skydiver: () => {
+    let g = `<path d="M70 54L52 32L30 26M70 66L52 88L30 94M104 56L122 40L144 46M104 64L122 80L144 74" stroke="#1e4c8f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+    g += `<path d="M64 60h44" stroke="#e8552b" stroke-width="20" stroke-linecap="round"/>`;
+    g += `<circle cx="52" cy="60" r="11" fill="#f1c27d"/><path d="M41 60a11 11 0 0 1 22 0z" fill="#23262d" transform="rotate(-90 52 60)"/>`;
+    g += `<rect x="40" y="55" width="7" height="10" rx="2" fill="#6fd3ff"/><rect x="84" y="52" width="18" height="16" rx="3" fill="#2a2d35"/>`;
+    return svg('14 16 144 88', g);
+  },
+  damavand: () => mountain({
+    c: '#7b6a5a', st: '#57493d',
+    body: 'M6 136L108 24Q120 16 132 24L234 136Z',
+    shade: 'M120 20L132 24L234 136H150Z',
+    snow: 'M80 56L108 24Q120 16 132 24L162 56L148 50L136 62L124 48L110 62L98 52Z',
+    extra: '<path d="M122 16q-8-10 2-18q6-6 0-14" stroke="rgba(255,255,255,.6)" stroke-width="3" fill="none" stroke-linecap="round"/>'
+  }),
+  everest: () => mountain({
+    c: '#6d7482', st: '#4a505c',
+    body: 'M0 136L48 84L68 94L110 18L128 46L148 34L192 92L240 136Z',
+    shade: 'M110 18L128 46L148 34L192 92L240 136H140Z',
+    snow: 'M92 50L110 18L128 46L148 34L166 58L150 52L140 62L126 54L114 66L104 56Z',
+    extra: '<path d="M110 18l-18 -4" stroke="rgba(255,255,255,.7)" stroke-width="4" stroke-linecap="round"/>'
+  }),
+  spider: () => {
+    let g = '';
+    [[-1, 38], [-1, 50], [1, 38], [1, 50]].forEach(([s, y], i) => {
+      g += `<path d="M58 ${y + (s > 0 ? 18 : 0)}Q${46 - i * 4} ${s > 0 ? 104 : 14} ${24 - i * 3} ${s > 0 ? 100 : 18}" stroke="#4a3a2a" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+      g += `<path d="M66 ${y + (s > 0 ? 18 : 0)}Q${80 + i * 6} ${s > 0 ? 104 : 14} ${100 + i * 6} ${s > 0 ? 100 : 18}" stroke="#4a3a2a" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+    });
+    g += `<ellipse cx="96" cy="60" rx="28" ry="21" fill="#6b5238" stroke="#3a2c1e" stroke-width="1.4"/><path d="M78 60q18-10 38 0" stroke="#c9a577" stroke-width="3" fill="none"/>`;
+    g += `<ellipse cx="56" cy="60" rx="20" ry="17" fill="#5a4430" stroke="#3a2c1e" stroke-width="1.4"/>`;
+    g += `<circle cx="42" cy="54" r="6" fill="#101010"/><circle cx="42" cy="67" r="6" fill="#101010"/><circle cx="40" cy="52" r="1.8" fill="#fff"/><circle cx="40" cy="65" r="1.8" fill="#fff"/>`;
+    return svg('14 8 132 104', g);
+  },
+  goose: () => {
+    let g = `<path d="M112 58L146 8L170 18L134 62Z" fill="#aaa497" stroke="#7d776c"/>`;
+    g += `<ellipse cx="124" cy="64" rx="52" ry="16" fill="#cfcac0" stroke="#8d877c"/>`;
+    g += `<path d="M168 60l30-6-26 16z" fill="#8d877c"/>`;
+    g += `<path d="M80 60Q56 52 34 50" stroke="#f2efe8" stroke-width="9" stroke-linecap="round" fill="none"/>`;
+    g += `<ellipse cx="28" cy="50" rx="12" ry="8" fill="#f4f2ec"/><path d="M24 43v14M31 43v14" stroke="#1d1d1d" stroke-width="2.4"/>`;
+    g += `<path d="M17 49L4 52L17 55Z" fill="#f0a830"/><circle cx="22" cy="48" r="1.6" fill="#111"/>`;
+    g += `<path d="M110 66L140 104L156 98L130 66Z" fill="#b8b2a6" stroke="#7d776c"/>`;
+    return svg('0 4 204 104', g);
+  },
+  airliner: () => {
+    let g = `<path d="M8 62Q8 48 40 46H250L284 16H294L282 56L262 66H40Q10 66 8 62Z" fill="#f4f6f8" stroke="#9aa6b2" stroke-width="1.4"/>`;
+    g += `<path d="M262 40L284 16H294L286 40Z" fill="#1f5fa8"/>`;
+    for (let x = 50; x < 240; x += 9) g += `<circle cx="${x}" cy="53" r="2" fill="#5b6978"/>`;
+    g += `<path d="M18 52q4-5 14-5v6z" fill="#2a3440"/>`;
+    g += `<path d="M118 60H170L144 96H132Z" fill="#c8d0d8" stroke="#9aa6b2"/><rect x="120" y="66" width="30" height="12" rx="6" fill="#aab4be"/>`;
+    g += `<path d="M40 64H258" stroke="#1f5fa8" stroke-width="2"/>`;
+    return svg('0 10 300 90', g);
+  },
+  vulture: () => {
+    let g = `<path d="M16 50Q130 18 244 50L236 62Q130 46 24 62Z" fill="#6b5540" stroke="#44362a" stroke-width="1.4"/>`;
+    for (let i = 0; i < 5; i++) g += `<path d="M${22 + i * 5} ${58 - i}l-14 ${4 + i * 2}M${238 - i * 5} ${58 - i}l14 ${4 + i * 2}" stroke="#44362a" stroke-width="2.4" stroke-linecap="round"/>`;
+    g += `<path d="M40 56Q130 40 220 56" stroke="#d9cbb0" stroke-width="3" fill="none" opacity=".7"/>`;
+    g += `<ellipse cx="130" cy="58" rx="26" ry="12" fill="#5a4636"/><path d="M146 62l26 10-26 2z" fill="#4a3a2c"/>`;
+    g += `<circle cx="104" cy="54" r="8" fill="#e8dcc6"/><circle cx="96" cy="50" r="7" fill="#c9b9a0"/><path d="M90 48l-8 4 8 2z" fill="#2c2620"/><circle cx="95" cy="48" r="1.4" fill="#111"/>`;
+    return svg('0 20 260 70', g);
+  },
+  concorde: () => {
+    let g = `<path d="M110 50L250 50L244 66L196 68Z" fill="#c9d1da" stroke="#98a3ae"/>`;
+    g += `<path d="M2 50L34 44L270 42L288 14H296L292 46L40 54Z" fill="#f7f8fa" stroke="#9aa6b2" stroke-width="1.4"/>`;
+    g += `<rect x="176" y="56" width="50" height="9" rx="2" fill="#a9b3bd"/>`;
+    g += `<path d="M24 46l12-2v5z" fill="#2a3440"/><path d="M40 50H268" stroke="#b01e2e" stroke-width="1.6"/>`;
+    return svg('0 10 300 64', g);
+  },
+  hotair: () => {
+    const id = 'h' + (++uid);
+    const env = 'M70 8C124 8 134 72 100 120L84 148H56L40 120C6 72 16 8 70 8Z';
+    let g = `<clipPath id="${id}"><path d="${env}"/></clipPath><path d="${env}" fill="#e23b3b"/>`;
+    g += `<g clip-path="url(#${id})">`;
+    for (let i = 0; i < 7; i++) g += `<rect x="${i * 20 + 4}" y="0" width="10" height="160" fill="${i % 2 ? '#ffd23f' : '#f6f2e8'}" opacity=".95"/>`;
+    g += `<rect x="0" y="70" width="140" height="14" fill="#1f5fa8"/></g>`;
+    g += `<path d="${env}" fill="none" stroke="#8a2020" stroke-width="1.4"/>`;
+    g += `<path d="M56 148L60 170M84 148L80 170" stroke="#5a4636" stroke-width="1.6"/><rect x="56" y="168" width="28" height="20" rx="3" fill="#8a6a45" stroke="#5a4636"/>`;
+    return svg('0 0 140 192', g);
+  },
+  sr71: () => {
+    let g = `<path d="M2 48L60 40L230 38L248 14H262V38L298 40V52L60 56Z" fill="#1c1e24" stroke="#686d80" stroke-width="1.4"/>`;
+    g += `<path d="M80 56L240 54L232 66L150 66Z" fill="#23262e" stroke="#686d80"/>`;
+    g += `<rect x="160" y="42" width="90" height="10" rx="5" fill="#2b2e38" stroke="#686d80"/>`;
+    g += `<path d="M44 42l18-3v5z" fill="#6fa8d8"/><path d="M252 50h40" stroke="#ff9a3c" stroke-width="3" filter="url(#glow)"/>`;
+    return svg('0 8 300 64', g);
+  },
+  wballoon: () => {
+    let g = `<circle cx="60" cy="58" r="50" fill="#f3efe4" stroke="#cfc6b2" stroke-width="1.4"/><ellipse cx="44" cy="38" rx="14" ry="9" fill="#fff" opacity=".8"/>`;
+    g += `<path d="M60 108V200" stroke="#9aa0a8" stroke-width="1.2"/>`;
+    g += `<path d="M50 132q10-10 20 0l-4 12h-12z" fill="#e8552b"/>`;
+    g += `<rect x="50" y="196" width="20" height="16" rx="2" fill="#f7f7f7" stroke="#9aa0a8"/><rect x="50" y="196" width="20" height="4" fill="#e8552b"/>`;
+    return svg('0 4 120 212', g);
+  },
+  eustace: () => {
+    let g = `<path d="M70 0V74" stroke="#c9d2de" stroke-width="1.6"/>`;
+    g += `<path d="M50 104h40v42H50z" fill="#f1f3f6" stroke="#9aa4b2" stroke-width="1.4" rx="8"/>`;
+    g += `<path d="M50 108L32 136M90 108L108 136" stroke="#f1f3f6" stroke-width="12" stroke-linecap="round"/>`;
+    g += `<path d="M58 146L54 184M82 146L86 184" stroke="#f1f3f6" stroke-width="13" stroke-linecap="round"/>`;
+    g += `<path d="M48 188h14M78 188h14" stroke="#3a3f48" stroke-width="7" stroke-linecap="round"/>`;
+    g += `<circle cx="70" cy="88" r="18" fill="#f1f3f6" stroke="#9aa4b2" stroke-width="1.4"/><ellipse cx="70" cy="90" rx="12" ry="9" fill="#e0a43a"/>`;
+    g += `<rect x="60" y="116" width="20" height="14" rx="3" fill="#2f6fb5"/>`;
+    return svg('20 0 100 196', g);
+  },
+  bigballoon: () => {
+    const env = 'M80 8C152 8 150 106 84 170H76C10 106 8 8 80 8Z';
+    let g = `<path d="${env}" fill="rgba(225,236,255,.28)" stroke="rgba(240,246,255,.85)" stroke-width="1.4"/>`;
+    [40, 60, 100, 120].forEach(x => g += `<path d="M80 10Q${x} 80 80 168" stroke="rgba(240,246,255,.45)" fill="none"/>`);
+    g += `<path d="M80 170V190" stroke="#c9d2de"/><rect x="72" y="190" width="16" height="10" rx="2" fill="#dfe5ec"/>`;
+    return svg('0 0 160 204', g);
+  },
+  sprite: () => {
+    let g = '';
+    for (let i = 0; i < 7; i++) {
+      const x = 58 + i * 11;
+      g += `<path d="M${x} 46Q${x + (i % 2 ? 8 : -8)} 90 ${x + (i % 3 - 1) * 10} 132" stroke="#ff5a6e" stroke-width="2" fill="none" filter="url(#glow)"/>`;
+      g += `<path d="M${x + (i % 3 - 1) * 10} 132q-4 14 ${i % 2 ? 6 : -6} 28" stroke="#6f7dff" stroke-width="1.6" fill="none" filter="url(#glow)"/>`;
+    }
+    g += `<ellipse cx="90" cy="40" rx="46" ry="16" fill="#ff4a5e" opacity=".9" filter="url(#glow)"/>`;
+    g += `<path d="M20 176c10-22 36-24 48-14 10-18 44-18 52 2 16-6 40 2 40 12z" fill="#3b4256"/>`;
+    return svg('10 18 160 162', g);
+  },
+  meteor: () => {
+    const [id, def] = grad([[0, 'rgba(255,240,200,0)'], [1, '#fff4d6']], false);
+    let g = `<defs>${def}</defs><path d="M10 70L230 18" stroke="url(#${id})" stroke-width="6" stroke-linecap="round"/>`;
+    g += `<path d="M120 46L230 18" stroke="#b6ffb0" stroke-width="2" opacity=".7"/>`;
+    g += `<circle cx="232" cy="18" r="7" fill="#ffffff" filter="url(#glow)"/>`;
+    return svg('0 0 250 84', g);
+  },
+  noctilucent: () => {
+    let g = '';
+    for (let i = 0; i < 6; i++) {
+      const y = 20 + i * 14;
+      g += `<path d="M0 ${y}q30 -10 60 0t60 0 60 0 60 0 60 0" stroke="rgba(170,215,255,${.85 - i * .1})" stroke-width="${3 - i * .3}" fill="none" filter="url(#glow)"/>`;
+    }
+    return svg('0 0 260 110', g);
+  },
+  aurora: () => {
+    const [id, def] = grad([[0, 'rgba(190,110,255,0)'], [.45, 'rgba(160,100,255,.55)'], [.8, '#5dff9e'], [1, 'rgba(93,255,158,.2)']]);
+    let g = `<defs>${def}</defs>`;
+    for (let i = 0; i < 5; i++) {
+      const x = 10 + i * 48;
+      g += `<path d="M${x} ${20 + (i % 2) * 14}q20 -8 40 0l-4 128q-16 6 -32 0z" fill="url(#${id})" opacity="${.9 - i * .08}"/>`;
+    }
+    return svg('0 0 260 160', g);
+  }
+};
+
+/* ================================================================ داده‌ها */
+// k: z لایه، c تصویر، m نشانه، f دانستنی. s: اندازهٔ نسبی تصویر.
+const ITEMS = [
+  {d: 0, k: 'z', n: 1, name: "وردسپهر", range: "۰ تا حدود ۱۲ کیلومتر", text: "همهٔ ابرها، باران و برف در این لایه رخ می‌دهند. حدود سه‌چهارم کل هوای زمین در آن فشرده شده و هرچه بالاتر بروید سردتر می‌شود."},
+  {d: 116, k: 'c', art: 'tree', s: .3, name: "هایپریون", text: "بلندترین درخت زندهٔ شناخته‌شده، یک سرخ‌چوب ساحلی در کالیفرنیا به بلندی حدود ۱۱۶ متر. جای دقیقش مخفی نگه داشته می‌شود."},
+  {d: 435, k: 'm', name: "برج میلاد", text: "بلندترین برج ایران و یکی از بلندترین برج‌های مخابراتی جهان."},
+  {d: 828, k: 'm', name: "برج خلیفه", text: "بلندترین ساختمان جهان، در دبی."},
+  {d: 979, k: 'm', name: "آبشار آنخل", text: "بلندترین آبشار جهان، در ونزوئلا؛ آب نزدیک به یک کیلومتر سقوط می‌کند."},
+  {d: 2000, k: 'c', art: 'cloud', s: .6, name: "ابر کومه‌ای", text: "یک ابر پنبه‌ای معمولی صدها تُن آب در خود دارد، اما قطره‌هایش آن‌قدر ریز و پراکنده‌اند که در هوا معلق می‌ماند."},
+  {d: 3964, k: 'm', name: "قلهٔ توچال", text: "بلندترین نقطهٔ کوه‌های شمال تهران."},
+  {d: 4000, k: 'c', art: 'skydiver', s: .5, name: "چترباز", text: "بیشتر پرش‌های تفریحی از ارتفاع حدود ۴ کیلومتری شروع می‌شوند. چترباز حدود یک دقیقه با سرعتی نزدیک به ۲۰۰ کیلومتر بر ساعت سقوط آزاد می‌کند."},
+  {d: 5100, k: 'm', name: "لا رینکونادا", text: "مرتفع‌ترین شهرک دائمی جهان، در رشته‌کوه آند در پرو؛ هزاران نفر در این ارتفاع زندگی می‌کنند."},
+  {d: 5500, k: 'f', text: "نیمی از کل هوای زمین پایین‌تر از این ارتفاع است. هر نفس در اینجا فقط نصف اکسیژنِ یک نفس در کنار دریا را دارد."},
+  {d: 5610, k: 'c', art: 'damavand', s: .75, name: "کوه دماوند", text: "بلندترین کوه ایران و بلندترین آتشفشان آسیا. هنوز بخار و گاز گوگرد از نزدیکی قله‌اش بیرون می‌آید."},
+  {d: 6700, k: 'c', art: 'spider', s: .4, name: "عنکبوت جهندهٔ هیمالیا", text: "یکی از مرتفع‌ترین ساکنان دائمی زمین. در شکاف سنگ‌های اورست زندگی می‌کند و حشراتی را می‌خورد که باد بالا آورده است."},
+  {d: 7290, k: 'c', art: 'goose', s: .6, name: "غاز سرراه‌راه", text: "هر سال در کوچ از روی هیمالیا می‌گذرد و گاهی بالاتر از ۷ کیلومتر پرواز می‌کند؛ جایی که اکسیژن کمتر از نصف سطح دریاست."},
+  {d: 8000, k: 'm', name: "منطقهٔ مرگ", text: "کوهنوردان به ارتفاع بالای ۸٬۰۰۰ متر این نام را داده‌اند؛ اکسیژن برای زنده‌ماندن طولانی کافی نیست."},
+  {d: 8849, k: 'c', art: 'everest', s: .75, name: "قلهٔ اورست", text: "بلندترین نقطهٔ سطح زمین. ادموند هیلاری و تنزینگ نورگی نخستین بار در سال ۱۹۵۳ به قله رسیدند."},
+  {d: 10700, k: 'c', art: 'airliner', s: .95, name: "هواپیمای مسافربری", text: "ارتفاع معمول پرواز هواپیماهای مسافربری. هوای بیرون حدود ۵۰ درجه زیر صفر است و فشارش یک‌چهارم سطح دریا."},
+  {d: 11300, k: 'c', art: 'vulture', s: .8, name: "کرکس روپل", text: "بلندترین پرواز ثبت‌شدهٔ یک پرنده: در سال ۱۹۷۳ یک کرکس روپل در ارتفاع ۱۱٬۳۰۰ متری بر فراز ساحل عاج به هواپیمایی برخورد کرد."},
+  {d: 12000, k: 'z', n: 2, name: "پوشن‌سپهر", range: "۱۲ تا ۵۰ کیلومتر", text: "لایهٔ اوزون اینجاست و پرتو فرابنفش خورشید را جذب می‌کند؛ به همین دلیل برخلاف لایهٔ پایینی، هرچه بالاتر بروید هوا گرم‌تر می‌شود. ابر و باران تقریباً وجود ندارد."},
+  {d: 18000, k: 'c', art: 'concorde', s: .95, name: "کنکورد", text: "هواپیمای مسافربری مافوق صوت که تا سال ۲۰۰۳ پرواز می‌کرد. در این ارتفاع و با دو برابر سرعت صوت، فاصلهٔ لندن تا نیویورک را حدود سه ساعت و نیم طی می‌کرد."},
+  {d: 19000, k: 'm', name: "حد آرمسترانگ", text: "فشار هوا آن‌قدر کم است که آب در دمای بدن می‌جوشد. بالاتر از اینجا هیچ‌کس بدون لباس فشار زنده نمی‌ماند."},
+  {d: 21027, k: 'c', art: 'hotair', s: .38, name: "بالن هوای گرم", text: "رکورد ارتفاع بالن هوای گرم: ویجی‌پت سینگانیا در سال ۲۰۰۵ با یک کابین بسته تا این ارتفاع بالا رفت."},
+  {d: 25000, k: 'm', name: "لایهٔ اوزون", text: "بیشترین غلظت اوزون در حوالی این ارتفاع است؛ سپری نامرئی در برابر پرتو فرابنفش."},
+  {d: 25929, k: 'c', art: 'sr71', s: .95, name: "اس‌آر-۷۱ بلک‌برد", text: "این هواپیمای شناسایی آمریکایی در سال ۱۹۷۶ رکورد ارتفاع پرواز پایدار را ثبت کرد. آن‌قدر سریع بود که از موشک‌هایی که به سویش شلیک می‌شد جلو می‌زد."},
+  {d: 32000, k: 'c', art: 'wballoon', s: .3, name: "بالن هواشناسی", text: "هر روز صدها بالن در سراسر جهان برای اندازه‌گیری دما، فشار و باد رها می‌شوند. بالن هرچه بالاتر می‌رود بادکرده‌تر می‌شود تا در حدود ۳۰ کیلومتری بترکد."},
+  {d: 37650, k: 'm', name: "میگ-۲۵", text: "بلندترین پرواز یک هواپیمای جت با موتور هوازی؛ رکوردی از سال ۱۹۷۷."},
+  {d: 38969, k: 'm', name: "پرش فلیکس باومگارتنر", text: "او در سال ۲۰۱۲ از کپسولی زیر یک بالن پرید و در سقوط آزاد دیوار صوتی را شکست."},
+  {d: 41419, k: 'c', art: 'eustace', s: .3, name: "آلن یوستس", text: "بلندترین پرش انسان: در سال ۲۰۱۴ با لباس فضایی زیر یک بالن بالا رفت، خود را رها کرد و حدود ۱۵ دقیقه بعد با چتر نجات فرود آمد."},
+  {d: 45000, k: 'f', text: "از اینجا به بعد آسمان حتی در روز سیاه است و انحنای زمین به‌روشنی دیده می‌شود."},
+  {d: 50000, k: 'z', n: 3, name: "میان‌سپهر", range: "۵۰ تا ۸۵ کیلومتر", text: "سردترین لایهٔ جوّ، جایی که بیشتر شهاب‌ها می‌سوزند. برای بالن‌ها بیش از حد بلند و برای ماهواره‌ها بیش از حد پایین است، پس ناشناخته‌ترین لایه است."},
+  {d: 53000, k: 'c', art: 'bigballoon', s: .38, name: "بالن پژوهشی", text: "بلندترین پرواز بالن: یک بالن بی‌سرنشین ژاپنی از پلاستیکی نازک‌تر از کیسهٔ فریزر، در سال ۲۰۰۲ به ۵۳ کیلومتری رسید."},
+  {d: 65000, k: 'f', text: "فشار هوا اینجا حدود یک ده‌هزارم سطح دریاست. تقریباً خلأ، اما هنوز آن‌قدر هوا هست که سنگی فضایی را به آتش بکشد."},
+  {d: 70000, k: 'c', art: 'sprite', s: .45, name: "اسپرایت سرخ", text: "درخشش‌های سرخ و کوتاهی بالای توفان‌های تندری که کسری از ثانیه طول می‌کشند. تا سال ۱۹۸۹ هیچ‌کس از آن‌ها عکس نگرفته بود."},
+  {d: 80000, k: 'c', art: 'meteor', s: .75, name: "شهاب", text: "هر روز ده‌ها تُن گرد و سنگ فضایی به جوّ زمین برخورد می‌کند. بیشترش در حدود همین ارتفاع داغ می‌شود و می‌سوزد."},
+  {d: 83000, k: 'c', art: 'noctilucent', s: .75, name: "ابرهای شب‌تاب", text: "بلندترین ابرهای زمین، ساخته‌شده از بلورهای یخ روی غبار شهاب‌ها. فقط در گرگ‌ومیش تابستان در عرض‌های جغرافیایی بالا دیده می‌شوند، وقتی هنوز خورشید به آن‌ها می‌تابد."},
+  {d: 85000, k: 'z', n: 4, name: "گرماسپهر", range: "بالاتر از ۸۵ کیلومتر", text: "مولکول‌های هوا آن‌قدر پراکنده‌اند که دمایشان به صدها درجه می‌رسد، اما هیچ چیز گرم احساس نمی‌شود. شفق‌های قطبی و ایستگاه فضایی در این لایه‌اند."},
+  {d: 88000, k: 'f', text: "مرز میان‌سپهر و گرماسپهر سردترین جای طبیعی سیارهٔ ماست؛ در تابستان قطبی دمایش به زیر ۱۰۰− درجهٔ سلسیوس می‌رسد."},
+  {d: 96000, k: 'c', art: 'aurora', s: .7, name: "شفق قطبی", text: "ذرات باردار خورشید به اکسیژن و نیتروژن هوا می‌خورند و آن‌ها را درخشان می‌کنند. لبهٔ پایینی شفق حدود ۱۰۰ کیلومتر بالاست و می‌تواند صدها کیلومتر بالاتر برود."}
+];
+const ZONES = ITEMS.filter(i => i.k === 'z');
+
+/* ================================================================ رنگ آسمان */
+const STOPS = [
+  [0, [135, 200, 235]], [2000, [112, 184, 230]], [6000, [82, 152, 216]], [12000, [52, 112, 192]],
+  [20000, [30, 72, 152]], [35000, [15, 37, 96]], [50000, [7, 18, 56]], [70000, [3, 8, 28]], [TOP, [1, 3, 11]]
+];
+function skyAt(d) {
+  d = clamp(d, 0, TOP);
+  for (let i = 1; i < STOPS.length; i++) {
+    if (d <= STOPS[i][0]) {
+      const [d0, c0] = STOPS[i - 1], [d1, c1] = STOPS[i], t = (d - d0) / (d1 - d0);
+      return c0.map((v, k) => Math.round(v + (c1[k] - v) * t));
+    }
+  }
+  return STOPS[STOPS.length - 1][1];
+}
+const lum = c => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
+
+/* ================================================================ ساخت صفحه */
+const lanes = $('#lanes'), sky = $('#sky');
+ITEMS.forEach((it, i) => {
+  const el = document.createElement(it.k === 'z' ? 'section' : 'article');
+  el.className = 'item ' + {z: 'zone', c: 'creature', m: 'marker', f: 'fact'}[it.k];
+  el.dataset.tone = lum(skyAt(it.d + 300)) > .5 ? 'light' : 'dark';
+  el.style.setProperty('--j', (i * 37) % 9);
+  if (it.k === 'z') {
+    el.id = 'z' + it.d;
+    el.innerHTML = `<span class="n">لایهٔ ${fa(it.n)} از ۴</span><h2>${it.name}</h2><span class="r">${it.range}</span><p>${it.text}</p>`;
+  } else if (it.k === 'c') {
+    el.style.setProperty('--s', it.s);
+    el.style.setProperty('--dl', (-(i * 1.3) % 8) + 's');
+    el.innerHTML = `<div class="art">${ART[it.art]()}</div><div class="card"><header><h3>${it.name}</h3><span class="d">${fmtAlt(it.d)}</span></header><p>${it.text}</p></div>`;
+  } else if (it.k === 'm') {
+    el.innerHTML = `<strong><span>${fmtAlt(it.d)}</span>${it.name}</strong><p>${it.text}</p>`;
+  } else {
+    el.innerHTML = `<p>${it.text}</p>`;
+  }
+  lanes.appendChild(el);
+  it.el = el;
+});
+function fmtAlt(d) { return d >= 20000 ? fa(d / 1000, d % 1000 ? 1 : 0) + ' کیلومتر' : fa(d) + ' متر'; }
+$('#scaleTxt').textContent = fa(SCALE * 10);
+
+// ابرهای تزئینی وردسپهر
+for (let a = 700, i = 0; a < 11500; a += 520 + (i * 211) % 400, i++) {
+  const p = document.createElement('div');
+  p.className = 'puff';
+  p.style.bottom = (a * SCALE + BASE) + 'px';
+  p.style.left = ((i * 43) % 88) + '%';
+  p.style.width = (80 + (i * 57) % 140) + 'px';
+  p.style.opacity = (.35 + ((i * 7) % 5) / 10).toFixed(2);
+  sky.insertBefore(p, lanes);
+}
+
+// هر مورد در ارتفاع خودش قرار می‌گیرد؛ در ستونی که کمتر جابه‌جا شود. اگر جا نبود کمی بالاتر می‌رود.
+function layout() {
+  const wide = innerWidth >= 900, nl = wide ? 2 : 1;
+  const tops = new Array(nl).fill(-Infinity);
+  let turn = 0;
+  ITEMS.forEach(it => {
+    const want = it.d * SCALE + BASE, h = it.el.offsetHeight;
+    if (it.k === 'c' || it.k === 'm') {
+      let best = turn % nl, bestPos = Infinity;
+      for (let k = 0; k < nl; k++) {
+        const l = (turn + k) % nl, pos = Math.max(want, tops[l] + GAP);
+        if (pos < bestPos) { bestPos = pos; best = l; }
+      }
+      turn++;
+      it.el.dataset.lane = best;
+      it.el.style.bottom = bestPos + 'px';
+      tops[best] = bestPos + h;
+    } else {
+      const pos = Math.max(want, Math.max(...tops) + GAP);
+      it.el.style.bottom = pos + 'px';
+      tops.fill(pos + h);
+    }
+  });
+  sky.style.height = Math.max(TOP * SCALE + BASE, Math.max(...tops) + GAP) + 'px';
+  measure();
+}
+
+/* ================================================================ ارتفاع‌سنج */
+// جوّ استاندارد: فشار (هکتوپاسکال) و دما (سلسیوس)
+const PRESS = [[0, 1013.25], [5000, 540.5], [11000, 226.3], [20000, 54.75], [32000, 8.68], [47000, 1.109], [51000, .669], [71000, .0396], [85000, .0037], [TOP, .00032]];
+const TEMPS = [[0, 15], [11000, -56.5], [20000, -56.5], [32000, -44.5], [47000, -2.5], [51000, -2.5], [71000, -58.5], [85000, -86], [TOP, -78]];
+function interp(tab, d, log) {
+  for (let i = 1; i < tab.length; i++) if (d <= tab[i][0]) {
+    const [d0, a] = tab[i - 1], [d1, b] = tab[i], t = (d - d0) / (d1 - d0);
+    return log ? Math.exp(Math.log(a) + (Math.log(b) - Math.log(a)) * t) : a + (b - a) * t;
+  }
+  return tab[tab.length - 1][1];
+}
+const sig = (v, n) => v.toLocaleString('fa-IR', {maximumSignificantDigits: n});
+
+const air = $('#air'), gAlt = $('#gAlt'), gUnit = $('#gUnit'), gZone = $('#gZone'), gP = $('#gP'), gT = $('#gT'), gB = $('#gB'), gDot = $('#gDot'), gTrack = $('#gTrack');
+ZONES.slice(1).forEach(z => {
+  const t = document.createElement('i');
+  t.style.top = ((1 - Math.sqrt(z.d / TOP)) * 100) + '%';
+  gTrack.appendChild(t);
+});
+
+let groundY = 0, alt = 0, lastShown = -1;
+function measure() { groundY = sky.getBoundingClientRect().bottom + scrollY; }
+function update() {
+  const mid = scrollY + innerHeight * .5;
+  alt = clamp((groundY - BASE - mid) / SCALE, 0, TOP);
+  const half = innerHeight * .5 / SCALE;
+  air.style.background = `linear-gradient(rgb(${skyAt(alt + half)}),rgb(${skyAt(alt - half)}))`;
+  const shown = Math.round(alt);
+  if (shown === lastShown) return;
+  lastShown = shown;
+  if (alt >= 10000) { gAlt.textContent = fa(alt / 1000, 1); gUnit.textContent = 'کیلومتر'; }
+  else { gAlt.textContent = fa(shown); gUnit.textContent = 'متر'; }
+  let zone = 'سطح زمین';
+  if (alt >= 1) ZONES.forEach(z => { if (alt >= z.d) zone = z.name.split(' (')[0]; });
+  if (alt >= TOP - 1) zone = 'خط کارمن';
+  gZone.textContent = zone;
+  const p = interp(PRESS, alt, true) / 1013.25;
+  gP.textContent = (p >= .1 ? fa(p, 2) : sig(p, 2)) + ' اتمسفر';
+  gT.textContent = fa(interp(TEMPS, alt)) + '°C';
+  const below = Math.max(0, (1 - p) * 100);
+  gB.textContent = '٪' + fa(below, below < 99 ? 0 : below < 99.9 ? 1 : below < 99.99 ? 2 : 3);
+  gDot.style.top = ((1 - Math.sqrt(alt / TOP)) * 100) + '%';
+}
+
+/* ================================================================ ستاره‌ها و شهاب‌ها */
+const cv = $('#stars'), cx = cv.getContext('2d');
+let W = 0, Hh = 0;
+function size() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; Hh = innerHeight;
+  cv.width = W * dpr; cv.height = Hh * dpr;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+const stars = Array.from({length: 170}, () => ({x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + .3, o: Math.random() * .6 + .4, w: Math.random() * 6.28}));
+const meteors = [];
+let lastY = scrollY;
+function draw(t) {
+  const dy = scrollY - lastY; lastY = scrollY;
+  cx.clearRect(0, 0, W, Hh);
+  const starA = clamp((alt - 15000) / 35000, 0, 1);
+  if (starA > 0) {
+    cx.fillStyle = '#f2f6ff';
+    stars.forEach(s => {
+      s.y = (((s.y - dy * .04 / Hh) % 1) + 1) % 1;
+      const tw = reduce ? 1 : .65 + .35 * Math.sin(t / 700 + s.w);
+      cx.globalAlpha = s.o * starA * tw;
+      cx.beginPath(); cx.arc(s.x * W, s.y * Hh, s.r, 0, 6.283); cx.fill();
+    });
+  }
+  const metA = clamp((alt - 40000) / 30000, 0, 1);
+  if (!reduce && metA > 0 && meteors.length < 3 && Math.random() < .012 * metA) {
+    const ang = .35 + Math.random() * .5;
+    meteors.push({x: Math.random() * W, y: Math.random() * Hh * .6, vx: -Math.cos(ang) * 9, vy: Math.sin(ang) * 9, age: 0, life: 40 + Math.random() * 30});
+  }
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const m = meteors[i];
+    m.age++; m.x += m.vx; m.y += m.vy - dy * .04;
+    if (m.age > m.life) { meteors.splice(i, 1); continue; }
+    const a = Math.sin(Math.PI * m.age / m.life) * metA;
+    const g = cx.createLinearGradient(m.x, m.y, m.x - m.vx * 9, m.y - m.vy * 9);
+    g.addColorStop(0, `rgba(255,248,225,${a})`); g.addColorStop(1, 'rgba(255,248,225,0)');
+    cx.globalAlpha = 1; cx.strokeStyle = g; cx.lineWidth = 2;
+    cx.beginPath(); cx.moveTo(m.x, m.y); cx.lineTo(m.x - m.vx * 9, m.y - m.vy * 9); cx.stroke();
+  }
+  cx.globalAlpha = 1;
+}
+function loop(t) { draw(t); requestAnimationFrame(loop); }
+
+/* ================================================================ رویدادها */
+let ticking = false, moved = false;
+addEventListener('scroll', () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { ticking = false; update(); if (reduce) draw(0); });
+}, {passive: true});
+['wheel', 'touchstart', 'keydown'].forEach(e => addEventListener(e, () => { moved = true; }, {passive: true, once: true}));
+
+let rt;
+addEventListener('resize', () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => {
+    const keep = alt;
+    size(); layout();
+    scrollTo(0, groundY - BASE - keep * SCALE - innerHeight * .5);
+    update(); if (reduce) draw(0);
+  }, 120);
+});
+
+function goTo(y) { scrollTo({top: y, behavior: reduce ? 'auto' : 'smooth'}); }
+function toGround() { return document.documentElement.scrollHeight - innerHeight; }
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => {
+  moved = true;
+  const v = b.dataset.go;
+  if (v === 'top') return goTo(0);
+  const r = $('#z' + v).getBoundingClientRect();
+  goTo(r.top + scrollY - innerHeight * .35);
+}));
+$('#toGround').addEventListener('click', () => goTo(toGround()));
+
+// صفحه از زمین شروع می‌شود، یعنی از پایین
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+size();
+layout();
+scrollTo(0, toGround());
+update();
+if (reduce) draw(0); else requestAnimationFrame(loop);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  layout();
+  if (!moved) scrollTo(0, toGround());
+  update();
+});
+})();
+</script>
+</body>
+</html>

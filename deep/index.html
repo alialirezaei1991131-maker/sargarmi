@@ -153,6 +153,7 @@ button{font:inherit;color:inherit}
 .g-track span{position:absolute;left:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
   background:var(--glow);box-shadow:0 0 10px var(--glow)}
 
+.lang a{color:inherit;text-decoration:none}.lang a:hover{text-decoration:underline}
 @media (max-width:899px){
   .creature{width:100%;max-width:440px;left:0;right:0;margin-inline:auto}
   .creature[data-lane="0"]{right:0}
@@ -188,7 +189,7 @@ button{font:inherit;color:inherit}
 </svg>
 
 <header class="sky">
-  <a class="lang" href="../index.html" lang="fa">← صفحهٔ اصلی</a>
+  <nav class="lang" aria-label="Site"><a href="../index.html" onclick="try{localStorage.setItem('sargarmi-lang','en')}catch(e){}">← Home</a> · <a href="fa.html" lang="fa" hreflang="fa" onclick="try{localStorage.setItem('sargarmi-lang','fa')}catch(e){}">فارسی</a></nav>
   <div class="sun"></div>
   <div class="cloud c1"></div>
   <div class="cloud c2"></div>
